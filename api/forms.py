@@ -2,6 +2,7 @@ from django import forms
 from .models import TheUser, Employer, Employee, Country, City
 from django.utils.translation import gettext_lazy as _
 from django.contrib.auth.forms import BaseUserCreationForm
+from django.core.validators import RegexValidator
 
 
 class PositionTitleFilterForm(forms.Form):
@@ -36,9 +37,7 @@ class EmployerRegistrationForm(forms.Form):
         model = Employer
         fields = ['name', 'country', 'city', 'text', 'media_array']
 
-    name = forms.CharField(max_length=300, help_text='Keep it empty to have make your name and surname '
-                                                     'as a name for employer profile', empty_value='mat jebal')
-    # TODO: doesnt let to leave a field empty
+    name = forms.CharField(max_length=300)
     country = forms.ModelChoiceField(
         queryset=Country.objects.all(),
         empty_label="Select a country"
@@ -47,27 +46,39 @@ class EmployerRegistrationForm(forms.Form):
         queryset=City.objects.all(),  # TODO: make a mechanism to check cities by chosen country
         empty_label="Select a city"
     )
-    text = forms.CharField(max_length=400, widget=forms.TextInput(attrs={'placeholder': 'Tell us more about you!'}))
+    text = forms.CharField(max_length=400, widget=forms.TextInput(attrs={'placeholder': 'Tell us more about you!'}),
+                           required=False)
     media_array = forms.CharField(max_length=80)  # TODO: media mechanism
 
 
 class EmployeeRegistrationForm(forms.Form):
     class Meta:
         model = Employee
-        fields = ['country', 'city', 'text', 'media_array']
+        fields = ['country', 'city', 'phone', 'email', 'text', 'cv', 'media_array']
 
     country = forms.ModelChoiceField(
         queryset=Country.objects.all(),
         empty_label="Select a country"
     )
     city = forms.ModelChoiceField(
-        queryset=City.objects.none(),
-        empty_label="Select a country first"
+        queryset=City.objects.all(),
+        empty_label="Select a city"
     )
+    # phone = forms.CharField(
+    #     max_length=20,
+    #     validators=[
+    #         RegexValidator(
+    #             regex=r'^\+?1?\d{9,15}$',  # Example regex for international phone numbers
+    #             message="Phone number must be entered in the format: '+999999999'. Up to 15 digits allowed.")
+    #     ]
+    # )
+    phone = forms.CharField(max_length=20, required=True, label="Contact phone")
+    email = forms.EmailField(required=True, label='Contact email')
     text = forms.CharField(max_length=400,
-                           widget=forms.TextInput(attrs={'placeholder': 'Tell us more about you!'}))
+                           widget=forms.TextInput(attrs={'placeholder': 'Tell us more about you!'}),
+                           required=False)
     media_array = forms.CharField(max_length=80)
-    cv = forms.FileField(allow_empty_file=True)
+    cv = forms.FileField(allow_empty_file=True, required=False)
 
 
 class LoginForm(forms.Form):

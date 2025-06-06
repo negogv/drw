@@ -3,6 +3,7 @@ from . import views
 import django.contrib.auth.urls
 
 urlpatterns = [
+    path('auth/', views.is_authenticated_shortcut_view),
     # path('get/all-employers', views.get_all_employers),
     # path('<str:model/>', views.ModelListCreate.as_view()),
     path('role/', views.role_choice_view),  # TODO: Should I mb make registration in one url with js??

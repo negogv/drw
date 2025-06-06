@@ -277,20 +277,40 @@ def register_view(request):
 
 
 def register_employer_view(request):
+    if not request.user.is_authenticated:
+        redirect('register')
     if request.method == 'POST':
         form = EmployerRegistrationForm(request.POST)
         if form.is_valid():
-            form.save()  # TODO: has no save function
+            form.data._mutable = True
+            form.data.update({'user': request.user.id})
+            # form.data.update({'user_id': request.user.id})
+            serializer = EmployerSerializer(data=form.data)
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
             return redirect('home')
     else:
-        user = request.user
-        form = EmployerRegistrationForm()
-        form.fields['name'].empty_value = user.first_name + user.last_name  # TODO Error func
+        form = EmployerRegistrationForm(initial={'name': request.user.first_name + ' ' + request.user.last_name})
     return render(request, 'registration/employer-registration.html', {'form': form})
 
 
 def register_employee_view(request):
-    pass
+    if not request.user.is_authenticated:
+        redirect('register')
+    if Employee.objects.filter(user=request.user.id).first():
+        return HttpResponse('You already registered as an employee', status=status.HTTP_307_TEMPORARY_REDIRECT)
+    if request.method == 'POST':
+        form = EmployeeRegistrationForm(request.POST)
+        if form.is_valid():
+            form.data._mutable = True
+            form.data.update({'user': request.user.id})
+            serializer = EmployeeSerializer(data=form.data)
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            return redirect('home')
+    else:
+        form = EmployeeRegistrationForm(initial={'phone': request.user.phone, 'email': request.user.email})
+    return render(request, 'registration/employee-registration.html', {'form': form})
 
 
 @api_view(['POST', 'GET'])
@@ -307,4 +327,10 @@ def login_view(request):
         form = LoginForm()
     return render(request, 'registration/login.html', {'form': form})
 
+
+def is_authenticated_shortcut_view(request):  # for development
+    if request.user.is_authenticated:
+        return HttpResponse(f'User is authenticated, user id - {request.user.id}', status=status.HTTP_200_OK)
+    else:
+        return HttpResponse("User isn't authenticated", status=status.HTTP_401_UNAUTHORIZED)
 

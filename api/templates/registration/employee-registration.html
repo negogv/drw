@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    DRW
+{% endblock %}
+
+{% block content %}
+    <h1>New employee</h1>
+    <form class="form" action="/api/register/employee/" method="post">
+        {% csrf_token %}
+        {{ form }}
+        <button class="form-submit">Submit</button>
+    </form>
+{% endblock %}

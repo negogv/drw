@@ -1,16 +1,15 @@
 from rest_framework import serializers
 from .models import *
 
-xyu = 15
+
 class EmployerSerializer(serializers.ModelSerializer):
     class Meta:
         model = Employer
         fields = ['id',
+                  'user',
                   'name',
-                  'surname',
-                  'location',
-                  'phone',
-                  'email',
+                  'country',
+                  'city',
                   'text',
                   'media_array',
                   'created']
@@ -20,9 +19,9 @@ class EmployeeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Employee
         fields = ['id',
-                  'name',
-                  'surname',
-                  'location',
+                  'user',
+                  'country',
+                  'city',
                   'phone',
                   'email',
                   'text',

@@ -27,9 +27,10 @@ class TheUser(AbstractUser):
 
 class Employer(models.Model):       # TODO: Maybe add blank=True to unnecessary fields?
     id = models.AutoField(primary_key=True)
+    user = models.ForeignKey(TheUser, on_delete=models.CASCADE)
     name = models.CharField(max_length=300)
-    country = models.CharField(max_length=50, null=True)
-    city = models.CharField(max_length=50, null=True)
+    country = models.CharField(max_length=50)
+    city = models.CharField(max_length=50)
     text = models.TextField(null=True)
     media_array = models.CharField(max_length=80, null=True)
     created = models.DateTimeField(auto_now_add=True)
@@ -40,8 +41,9 @@ class Employer(models.Model):       # TODO: Maybe add blank=True to unnecessary 
 
 class Employee(models.Model):
     id = models.AutoField(primary_key=True)
-    country = models.CharField(max_length=50, null=True)
-    city = models.CharField(max_length=50, null=True)
+    user = models.ForeignKey(TheUser, on_delete=models.CASCADE)
+    country = models.CharField(max_length=50)
+    city = models.CharField(max_length=50)
     phone = models.IntegerField(null=True)  # TODO: checkpoint if the user wants to remain the same number/email
     email = models.CharField(max_length=40, null=True)  # TODO: for the others as for registration
     text = models.TextField(max_length=400, null=True)
@@ -50,7 +52,8 @@ class Employee(models.Model):
     created = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return self.name
+        return "tvoje name kurva"
+        # return self.user_id.name
 
 
 class Position(models.Model):
