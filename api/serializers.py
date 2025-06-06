@@ -16,9 +16,9 @@ class EmployerSerializer(serializers.ModelSerializer):
                   'created']
 
 
-class JobseekerSerializer(serializers.ModelSerializer):
+class EmployeeSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Jobseeker
+        model = Employee
         fields = ['id',
                   'name',
                   'surname',

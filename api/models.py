@@ -4,8 +4,8 @@ from django.contrib.auth.models import UserManager, AbstractUser
 
 class TheUser(AbstractUser):
     class RoleChoices(models.TextChoices):
-        EMPLOYER = 'E'
-        JOBSEEKER = 'J'
+        EMPLOYER = 'employer'
+        EMPLOYEE = 'employee'
     username = models.CharField(
         "username",
         max_length=20,
@@ -15,11 +15,11 @@ class TheUser(AbstractUser):
         error_messages={"unique": "A user with that username already exists."}
     )
     phone = models.CharField(max_length=20)
-    REQUIRED_FIELDS = ['email', 'first_name']
+    REQUIRED_FIELDS = ['email', 'first_name', 'last_name']
     user_permissions = None
     groups = None
     email = models.EmailField("email address")
-    role = models.CharField(max_length=1, choices=RoleChoices.choices)
+    role = models.CharField(max_length=8, choices=RoleChoices.choices)
 
     def __str__(self):
         return "{}".format(self.username)
@@ -27,11 +27,9 @@ class TheUser(AbstractUser):
 
 class Employer(models.Model):       # TODO: Maybe add blank=True to unnecessary fields?
     id = models.AutoField(primary_key=True)
-    name = models.CharField(max_length=50)
-    surname = models.CharField(max_length=50, null=True)
-    location = models.CharField(max_length=100, null=True)
-    phone = models.IntegerField(null=True)
-    email = models.CharField(max_length=40, null=True)
+    name = models.CharField(max_length=300)
+    country = models.CharField(max_length=50, null=True)
+    city = models.CharField(max_length=50, null=True)
     text = models.TextField(null=True)
     media_array = models.CharField(max_length=80, null=True)
     created = models.DateTimeField(auto_now_add=True)
@@ -40,16 +38,15 @@ class Employer(models.Model):       # TODO: Maybe add blank=True to unnecessary 
         return self.name
 
 
-class Jobseeker(models.Model):
+class Employee(models.Model):
     id = models.AutoField(primary_key=True)
-    name = models.CharField(max_length=50)
-    surname = models.CharField(max_length=50, null=True)
-    location = models.CharField(max_length=100, null=True)
-    phone = models.IntegerField(null=True)
-    email = models.CharField(max_length=40, null=True)
-    text = models.TextField(null=True)
+    country = models.CharField(max_length=50, null=True)
+    city = models.CharField(max_length=50, null=True)
+    phone = models.IntegerField(null=True)  # TODO: checkpoint if the user wants to remain the same number/email
+    email = models.CharField(max_length=40, null=True)  # TODO: for the others as for registration
+    text = models.TextField(max_length=400, null=True)
     media_array = models.CharField(max_length=80, null=True)
-    cv = models.BinaryField(null=True, editable=True)
+    cv = models.FileField(null=True, editable=True)
     created = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -99,6 +96,23 @@ class MediaFile(models.Model):
 
     def __str__(self):
         return self.media_name
+
+
+class Country(models.Model):
+    name = models.CharField(max_length=100)
+    code = models.CharField(max_length=2)  # ISO country code
+
+    def __str__(self):
+        return self.name
+
+
+class City(models.Model):
+    name = models.CharField(max_length=100)
+    country = models.ForeignKey(Country, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f"{self.name}, {self.country}"
+
 
 class TestImage(models.Model):
     id = models.AutoField(primary_key=True)

@@ -5,6 +5,7 @@ from django.core.files.uploadedfile import TemporaryUploadedFile
 from django.views.generic import TemplateView
 from django.db import transaction
 from django.contrib.auth.forms import AuthenticationForm
+from django.contrib.auth import authenticate, login
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.request import Request
@@ -17,7 +18,7 @@ import api.models
 from .serializers import *
 from rest_framework.parsers import MultiPartParser, FormParser
 import os.path as path
-from .forms import RegistrationForm, LoginForm
+from .forms import RegistrationForm, LoginForm, EmployeeRegistrationForm, EmployerRegistrationForm
 # Create your views here.
 
 from django.contrib.auth.forms import UserCreationForm
@@ -46,27 +47,27 @@ class EmployerRetrieveUpdateDestroy(EmployerViews, generics.RetrieveUpdateDestro
     pass
 
 
-class JobseekerViews:
-    queryset = Jobseeker.objects.all()
-    serializer_class = JobseekerSerializer
+class EmployeeViews:
+    queryset = Employee.objects.all()
+    serializer_class = EmployerSerializer
 
 
-class JobseekerListCreate(JobseekerViews, viewsets.ModelViewSet):
+class EmployeeListCreate(EmployeeViews, viewsets.ModelViewSet):
     # Just for interest to learn how to create a model in django by hands
 
     def list(self, request, *args, **kwargs):
-        queryset = Jobseeker.objects.all()
-        serializer_class = JobseekerSerializer(instance=queryset, many=True)
+        queryset = Employee.objects.all()
+        serializer_class = EmployeeSerializer(instance=queryset, many=True)
         return Response(data=serializer_class.data, status=200)
 
     def create(self, request, *args, **kwargs):
-        serializer = JobseekerSerializer(request.data)
+        serializer = EmployeeSerializer(request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
-class JobseekerRetrieveUpdateDestroy(JobseekerViews, generics.RetrieveUpdateDestroyAPIView):
+class EmployeeRetrieveUpdateDestroy(EmployeeViews, generics.RetrieveUpdateDestroyAPIView):
     pass
 
 
@@ -216,8 +217,8 @@ class HomeView(TemplateView):
     template_name = 'index.html'
 
 
-class JobseekerPageView(TemplateView):
-    template_name = 'jobseeker.html'
+class EmployeePageView(TemplateView):
+    template_name = 'employee.html'
 
 
 class Login(APIView):
@@ -240,17 +241,56 @@ def role_choice_view(request):
         return render(request, 'registration/role-choice.html')
 
 
-def register_view(request, **kwargs):
+def login_user(request):
+    if request.user.is_authenticated:
+        return
+
+    if request.method == 'POST':
+        username = request.POST['username'].lower()
+        password = request.POST['password1']
+
+        try:
+            user = TheUser.objects.get(username=username)
+        except:
+            Response("username doesn't exist", status=status.HTTP_404_NOT_FOUND)
+
+        user = authenticate(request, username=username, password=password)
+
+        if user is not None:
+            login(request, user)
+        else:
+            Response ('Username or password is incorrect!', status=status.HTTP_400_BAD_REQUEST)
+
+
+def register_view(request):
     if request.method == "POST":
         form = RegistrationForm(request.POST)
-        role = kwargs['role']
-        form.instance.role = role
         if form.is_valid():
+            role = form.instance.role
             form.save()
-            return redirect('home')
+            login_user(request)
+            # return redirect('home')
+            return redirect(f'{role}/')
     else:
         form = RegistrationForm()
     return render(request, "registration/register.html", {"form": form})
+
+
+def register_employer_view(request):
+    if request.method == 'POST':
+        form = EmployerRegistrationForm(request.POST)
+        if form.is_valid():
+            form.save()  # TODO: has no save function
+            return redirect('home')
+    else:
+        user = request.user
+        form = EmployerRegistrationForm()
+        form.fields['name'].empty_value = user.first_name + user.last_name  # TODO Error func
+    return render(request, 'registration/employer-registration.html', {'form': form})
+
+
+def register_employee_view(request):
+    pass
 
 
 @api_view(['POST', 'GET'])
