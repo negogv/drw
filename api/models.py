@@ -62,8 +62,8 @@ class Company(models.Model):       # TODO: Maybe add blank=True to unnecessary f
     id = models.AutoField(primary_key=True)
     user = models.ForeignKey(TheUser, on_delete=models.CASCADE)
     name = models.CharField(max_length=250, unique=True)
-    country = models.ForeignKey(Country, on_delete=models.SET(7))
-    city = models.ForeignKey(City, on_delete=models.SET(8))
+    country = models.ForeignKey(Country, on_delete=models.SET(1))
+    city = models.ForeignKey(City, on_delete=models.SET(1))
     text = models.TextField(null=True)
     media_array = models.CharField(max_length=80, null=True)
     created = models.DateTimeField(auto_now_add=True)
@@ -75,8 +75,8 @@ class Company(models.Model):       # TODO: Maybe add blank=True to unnecessary f
 class Employee(models.Model):
     id = models.AutoField(primary_key=True)
     user = models.ForeignKey(TheUser, on_delete=models.CASCADE)
-    country = models.ForeignKey(Country, on_delete=models.SET(7))
-    city = models.ForeignKey(City, on_delete=models.SET(8))
+    country = models.ForeignKey(Country, on_delete=models.SET(1))
+    city = models.ForeignKey(City, on_delete=models.SET(1))
     phone = models.IntegerField(null=True)  # TODO: checkpoint if the user wants to remain the same number/email
     email = models.CharField(max_length=40, null=True)  # TODO: for the others as for registration
     text = models.TextField(max_length=400, null=True)

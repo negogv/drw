@@ -39,11 +39,11 @@ class CompanyRegistrationForm(forms.Form):
 
     name = forms.CharField(max_length=300)
     country = forms.ModelChoiceField(
-        queryset=Country.objects.exclude(id=7),
+        queryset=Country.objects.exclude(id=1),
         empty_label="Select a country"
     )
     city = forms.ModelChoiceField(
-        queryset=City.objects.exclude(id=8),  # TODO: make a mechanism to check cities by chosen country
+        queryset=City.objects.exclude(id=1),  # TODO: make a mechanism to check cities by chosen country
         empty_label="Select a city"
     )
     text = forms.CharField(max_length=400, widget=forms.TextInput(attrs={'placeholder': 'Tell us more about you!'}),
@@ -57,11 +57,11 @@ class EmployeeRegistrationForm(forms.Form):
         fields = ['country', 'city', 'phone', 'email', 'text', 'cv', 'media_array']
 
     country = forms.ModelChoiceField(
-        queryset=Country.objects.exclude(id=7),
+        queryset=Country.objects.exclude(id=1),
         empty_label="Select a country"
     )
     city = forms.ModelChoiceField(
-        queryset=City.objects.exclude(id=8),
+        queryset=City.objects.exclude(id=1),
         empty_label="Select a city"
     )
     # phone = forms.CharField(
