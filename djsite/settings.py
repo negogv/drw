@@ -96,7 +96,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'djsite.wsgi.application'
 
-AUTH_USER_MODEL = 'api.User'
+AUTH_USER_MODEL = 'api.TheUser'
 
 
 # Database

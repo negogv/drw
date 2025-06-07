@@ -250,7 +250,7 @@ def login_user(request):
         username = request.POST['username'].lower()
         password = request.POST['password1'] or request.POST['password']
 
-        user = User.objects.filter(username=username).first()
+        user = TheUser.objects.filter(username=username).first()
 
         if user is not None:
             login(request, user)

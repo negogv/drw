@@ -63,7 +63,7 @@ class MediaFileSerializer(serializers.ModelSerializer):
                   'media_name']
 
 
-class UserSerializer(serializers.ModelSerializer):
+class TheUserSerializer(serializers.ModelSerializer):
     class Meta:
-        model = User
+        model = TheUser
         fields = '__all__'

@@ -11,10 +11,10 @@ class VacancyTitleFilterForm(forms.Form):
 
 class RegistrationForm(BaseUserCreationForm):
     class Meta:
-        model = User
+        model = TheUser
         fields = ["username", "first_name", "last_name", 'role', "email", "phone", "password1", "password2"]
     username = forms.CharField(max_length=30)
-    role = forms.ChoiceField(choices=User.RoleChoices.choices)
+    role = forms.ChoiceField(choices=TheUser.RoleChoices.choices)
     password1 = forms.CharField(
         label='Password',
         required=True,
@@ -83,7 +83,7 @@ class EmployeeRegistrationForm(forms.Form):
 
 class LoginForm(forms.Form):
     class Meta:
-        model = User
+        model = TheUser
         fields = ['username', 'password']
     username = forms.CharField(widget=forms.TextInput(attrs={"autofocus": True}))
     password = forms.CharField(

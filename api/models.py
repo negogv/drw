@@ -2,7 +2,7 @@ from django.db import models
 from django.contrib.auth.models import UserManager, AbstractUser
 
 
-class User(AbstractUser):
+class TheUser(AbstractUser):
     class RoleChoices(models.TextChoices):
         COMPANY = 'c'
         EMPLOYEE = 'e'
@@ -60,7 +60,7 @@ class Currency(models.Model):
 
 class Company(models.Model):       # TODO: Maybe add blank=True to unnecessary fields?
     id = models.AutoField(primary_key=True)
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(TheUser, on_delete=models.CASCADE)
     name = models.CharField(max_length=250, unique=True)
     country = models.ForeignKey(Country, on_delete=models.SET(7))
     city = models.ForeignKey(City, on_delete=models.SET(8))
@@ -74,7 +74,7 @@ class Company(models.Model):       # TODO: Maybe add blank=True to unnecessary f
 
 class Employee(models.Model):
     id = models.AutoField(primary_key=True)
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(TheUser, on_delete=models.CASCADE)
     country = models.ForeignKey(Country, on_delete=models.SET(7))
     city = models.ForeignKey(City, on_delete=models.SET(8))
     phone = models.IntegerField(null=True)  # TODO: checkpoint if the user wants to remain the same number/email
@@ -85,7 +85,7 @@ class Employee(models.Model):
     created = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return User.objects.get(self.user)
+        return TheUser.objects.get(self.user)
         # return self.user_id.name
 
 
