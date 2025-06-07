@@ -1,20 +1,20 @@
 from django import forms
-from .models import TheUser, Employer, Employee, Country, City
+from .models import *
 from django.utils.translation import gettext_lazy as _
 from django.contrib.auth.forms import BaseUserCreationForm
 from django.core.validators import RegexValidator
 
 
-class PositionTitleFilterForm(forms.Form):
+class VacancyTitleFilterForm(forms.Form):
     title = forms.CharField()
 
 
 class RegistrationForm(BaseUserCreationForm):
     class Meta:
-        model = TheUser
+        model = User
         fields = ["username", "first_name", "last_name", 'role', "email", "phone", "password1", "password2"]
     username = forms.CharField(max_length=30)
-    role = forms.ChoiceField(choices=TheUser.RoleChoices.choices)
+    role = forms.ChoiceField(choices=User.RoleChoices.choices)
     password1 = forms.CharField(
         label='Password',
         required=True,
@@ -32,18 +32,18 @@ class RegistrationForm(BaseUserCreationForm):
     # last_name = forms.CharField(max_length=30)
 
 
-class EmployerRegistrationForm(forms.Form):
+class CompanyRegistrationForm(forms.Form):
     class Meta:
-        model = Employer
+        model = Company
         fields = ['name', 'country', 'city', 'text', 'media_array']
 
     name = forms.CharField(max_length=300)
     country = forms.ModelChoiceField(
-        queryset=Country.objects.all(),
+        queryset=Country.objects.exclude(id=7),
         empty_label="Select a country"
     )
     city = forms.ModelChoiceField(
-        queryset=City.objects.all(),  # TODO: make a mechanism to check cities by chosen country
+        queryset=City.objects.exclude(id=8),  # TODO: make a mechanism to check cities by chosen country
         empty_label="Select a city"
     )
     text = forms.CharField(max_length=400, widget=forms.TextInput(attrs={'placeholder': 'Tell us more about you!'}),
@@ -57,11 +57,11 @@ class EmployeeRegistrationForm(forms.Form):
         fields = ['country', 'city', 'phone', 'email', 'text', 'cv', 'media_array']
 
     country = forms.ModelChoiceField(
-        queryset=Country.objects.all(),
+        queryset=Country.objects.exclude(id=7),
         empty_label="Select a country"
     )
     city = forms.ModelChoiceField(
-        queryset=City.objects.all(),
+        queryset=City.objects.exclude(id=8),
         empty_label="Select a city"
     )
     # phone = forms.CharField(
@@ -83,7 +83,7 @@ class EmployeeRegistrationForm(forms.Form):
 
 class LoginForm(forms.Form):
     class Meta:
-        model = TheUser
+        model = User
         fields = ['username', 'password']
     username = forms.CharField(widget=forms.TextInput(attrs={"autofocus": True}))
     password = forms.CharField(
@@ -92,3 +92,14 @@ class LoginForm(forms.Form):
         widget=forms.PasswordInput(attrs={"autocomplete": "current-password"}),
     )
 
+
+class NewVacancyForm(forms.ModelForm):
+    class Meta:
+        model = Vacancy
+        fields = ['title', 'text', 'salary', 'currency', 'salary_type', 'media_array', 'tags']
+    title = forms.CharField(max_length=200,
+                            widget=forms.TextInput(attrs={'placeholder': 'Name of the vacancy'}),
+                            required=True),
+    text = forms.CharField(max_length=5000,
+                           widget=forms.TextInput(attrs={'placeholder': 'More about the vacancy'}),
+                           required=True)

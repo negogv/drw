@@ -6,6 +6,7 @@ from django.views.generic import TemplateView
 from django.db import transaction
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth import authenticate, login
+from django.contrib import messages
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.request import Request
@@ -18,7 +19,7 @@ import api.models
 from .serializers import *
 from rest_framework.parsers import MultiPartParser, FormParser
 import os.path as path
-from .forms import RegistrationForm, LoginForm, EmployeeRegistrationForm, EmployerRegistrationForm
+from .forms import RegistrationForm, LoginForm, EmployeeRegistrationForm, CompanyRegistrationForm
 # Create your views here.
 
 from django.contrib.auth.forms import UserCreationForm
@@ -34,22 +35,22 @@ db = mysql.connector.connect(
 cursor = db.cursor(buffered=True)
 
 
-class EmployerViews:
-    queryset = Employer.objects.all()
-    serializer_class = EmployerSerializer
+class CompanyViews:
+    queryset = Company.objects.all()
+    serializer_class = CompanySerializer
 
 
-class EmployerListCreate(EmployerViews, generics.ListCreateAPIView):
+class CompanyListCreate(CompanyViews, generics.ListCreateAPIView):
     pass
 
 
-class EmployerRetrieveUpdateDestroy(EmployerViews, generics.RetrieveUpdateDestroyAPIView):
+class CompanyRetrieveUpdateDestroy(CompanyViews, generics.RetrieveUpdateDestroyAPIView):
     pass
 
 
 class EmployeeViews:
     queryset = Employee.objects.all()
-    serializer_class = EmployerSerializer
+    serializer_class = CompanySerializer
 
 
 class EmployeeListCreate(EmployeeViews, viewsets.ModelViewSet):
@@ -71,34 +72,34 @@ class EmployeeRetrieveUpdateDestroy(EmployeeViews, generics.RetrieveUpdateDestro
     pass
 
 
-class PositionViews:
-    queryset = Position.objects.all()
-    serializer_class = PositionSerializer
+class VacancyViews:
+    queryset = Vacancy.objects.all()
+    serializer_class = VacancySerializer
 
 
-class PositionListCreate(PositionViews, generics.ListCreateAPIView):
+class VacancyListCreate(VacancyViews, generics.ListCreateAPIView):
     pass
 
 
-class PositionRetrieveUpdateDestroy(PositionViews, generics.RetrieveUpdateDestroyAPIView):
+class VacancyRetrieveUpdateDestroy(VacancyViews, generics.RetrieveUpdateDestroyAPIView):
     pass
 
 
-class PositionListByTags(APIView):
+class VacancyListByTags(APIView):
     def get(self, request: Request, **kwargs):
-        instance = Position.objects.filter(tags__contains=kwargs['tag'])
-        serializer = PositionSerializer(instance, many=True)
+        instance = Vacancy.objects.filter(tags__contains=kwargs['tag'])
+        serializer = VacancySerializer(instance, many=True)
 
         return Response(serializer.data)
 
 
-class PositionListBySalary(generics.ListAPIView):
-    serializer_class = PositionSerializer
+class VacancyListBySalary(generics.ListAPIView):
+    serializer_class = VacancySerializer
 
     def get_queryset(self):
         minimum = self.request.query_params.get('min-salary', 0)
         maximum = self.request.query_params.get('max-salary', 2147483647)
-        return Position.objects.filter(salary__gte=minimum).filter(salary__lte=maximum)
+        return Vacancy.objects.filter(salary__gte=minimum).filter(salary__lte=maximum)
 
 
 class ModelSearchList(APIView):
@@ -117,8 +118,8 @@ class ModelSearchList(APIView):
 
 
 class FeedbackViews:
-    queryset = PositionFeedback.objects.all()
-    serializer_class = PositionFeedbackSerializer
+    queryset = VacancyFeedback.objects.all()
+    serializer_class = VacancyFeedbackSerializer
 
 
 class FeedbackListCreate(FeedbackViews, generics.ListCreateAPIView):
@@ -207,8 +208,8 @@ class MediaFileRetrieve(APIView):
         image_type = instance.media_name.split('.')[-1]
 
         response = HttpResponse(instance.media, content_type=f'image/{image_type}', status=status.HTTP_200_OK)
-        # response['Content-Disposition'] = f'attachment; filename="{instance.media_name}"'
-        # response['Content-Disposition'] = 'inline'
+        # response['Content-Disvacancy'] = f'attachment; filename="{instance.media_name}"'
+        # response['Content-Disvacancy'] = 'inline'
 
         return response
 
@@ -247,22 +248,21 @@ def login_user(request):
 
     if request.method == 'POST':
         username = request.POST['username'].lower()
-        password = request.POST['password1']
+        password = request.POST['password1'] or request.POST['password']
 
-        try:
-            user = TheUser.objects.get(username=username)
-        except:
-            Response("username doesn't exist", status=status.HTTP_404_NOT_FOUND)
-
-        user = authenticate(request, username=username, password=password)
+        user = User.objects.filter(username=username).first()
 
         if user is not None:
             login(request, user)
+            return True
         else:
-            Response ('Username or password is incorrect!', status=status.HTTP_400_BAD_REQUEST)
+            return Response('Username or password is incorrect', status=status.HTTP_400_BAD_REQUEST)
 
 
 def register_view(request):
+    if request.user.is_authenticated:
+        messages.info(request, "You are already registered")
+        return redirect('home')
     if request.method == "POST":
         form = RegistrationForm(request.POST)
         if form.is_valid():
@@ -276,22 +276,22 @@ def register_view(request):
     return render(request, "registration/register.html", {"form": form})
 
 
-def register_employer_view(request):
+def register_company_view(request):
     if not request.user.is_authenticated:
         redirect('register')
     if request.method == 'POST':
-        form = EmployerRegistrationForm(request.POST)
+        form = CompanyRegistrationForm(request.POST)
         if form.is_valid():
             form.data._mutable = True
             form.data.update({'user': request.user.id})
             # form.data.update({'user_id': request.user.id})
-            serializer = EmployerSerializer(data=form.data)
+            serializer = CompanySerializer(data=form.data)
             serializer.is_valid(raise_exception=True)
             serializer.save()
             return redirect('home')
     else:
-        form = EmployerRegistrationForm(initial={'name': request.user.first_name + ' ' + request.user.last_name})
-    return render(request, 'registration/employer-registration.html', {'form': form})
+        form = CompanyRegistrationForm(initial={'name': request.user.first_name + ' ' + request.user.last_name})
+    return render(request, 'registration/company-registration.html', {'form': form})
 
 
 def register_employee_view(request):
@@ -313,19 +313,21 @@ def register_employee_view(request):
     return render(request, 'registration/employee-registration.html', {'form': form})
 
 
-@api_view(['POST', 'GET'])
-# @renderer_classes((TemplateHTMLRenderer, JSONRenderer))
 def login_view(request):
+    if request.user.is_authenticated:
+        messages.info(request, "You are already logged in")
+        return redirect('home')
     if request.method == 'POST':
-        # form = AuthenticationForm(request.POST)
-        user = get_object_or_404(TheUser, username=request.POST['username'])
-        if not user.check_password(request.POST['password']):
-            return Response("missing user", status=status.HTTP_404_NOT_FOUND)
-        serializer = UserSerializer(user)
-        return Response({'user': serializer.data}, status=status.HTTP_200_OK)
+        logging = login_user(request)
+        if logging is True:
+            messages.success(request, "You have logged in!")
+            return redirect('home')  # TODO: redirect to user page or something
+        else:
+            messages.error(request, f"Something went wrong\n{logging.data}")
+            return redirect('login')
     else:
         form = LoginForm()
-    return render(request, 'registration/login.html', {'form': form})
+        return render(request, 'registration/login.html', {'form': form})
 
 
 def is_authenticated_shortcut_view(request):  # for development
@@ -334,3 +336,29 @@ def is_authenticated_shortcut_view(request):  # for development
     else:
         return HttpResponse("User isn't authenticated", status=status.HTTP_401_UNAUTHORIZED)
 
+
+def vacancy_company_choice_view(request):
+    if not request.user.is_authenticated:
+        return HttpResponse("You can't make a vacancy, please authorise", status=status.HTTP_401_UNAUTHORIZED)
+    if not Company.objects.filter(user=request.user.id).first():
+        return HttpResponse("You aren't an company, you can't make a vacancy", status=status.HTTP_401_UNAUTHORIZED)
+    companies = Company.objects.filter(user=request.user.id)
+    context = {'companies': companies}
+
+    return render(request, 'vacancy/company-choice.html', context)
+
+
+def new_vacancy_view(request, **kwargs):
+    if not request.user.is_authenticated:
+        return HttpResponse("You can't use this page, please authorise", status=status.HTTP_401_UNAUTHORIZED)
+    company = Company.objects.get(name=kwargs['company_name'])
+    if company.user != request.user.id:
+        messages.warning(request, "You don't own this company")
+        return redirect('company-choice')
+
+
+
+
+def test_view(request):
+    messages.error(request, 'bla bla bla')
+    return redirect('home')

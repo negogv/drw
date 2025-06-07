@@ -2,9 +2,9 @@ from rest_framework import serializers
 from .models import *
 
 
-class EmployerSerializer(serializers.ModelSerializer):
+class CompanySerializer(serializers.ModelSerializer):
     class Meta:
-        model = Employer
+        model = Company
         fields = ['id',
                   'user',
                   'name',
@@ -30,9 +30,9 @@ class EmployeeSerializer(serializers.ModelSerializer):
                   'created']
 
 
-class PositionSerializer(serializers.ModelSerializer):
+class VacancySerializer(serializers.ModelSerializer):
     class Meta:
-        model = Position
+        model = Vacancy
         fields = ['id',
                   'owner',
                   'text',
@@ -43,12 +43,12 @@ class PositionSerializer(serializers.ModelSerializer):
                   'created']
 
 
-class PositionFeedbackSerializer(serializers.ModelSerializer):
+class VacancyFeedbackSerializer(serializers.ModelSerializer):
     class Meta:
-        model = PositionFeedback
+        model = VacancyFeedback
         fields = ['id',
                   'owner',
-                  'position',
+                  'vacancy',
                   'feedback_type',
                   'file',
                   'text',
@@ -63,14 +63,7 @@ class MediaFileSerializer(serializers.ModelSerializer):
                   'media_name']
 
 
-class TestImageSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = TestImage
-        fields = ['id',
-                  'image']
-
-
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
-        model = TheUser
+        model = User
         fields = '__all__'

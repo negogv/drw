@@ -5,8 +5,8 @@
 {% endblock %}
 
 {% block content %}
-    <h1>New employer</h1>
-    <form class="form" action="/api/register/employer/" method="post">
+    <h1>New company</h1>
+    <form class="form" action="/api/register/c/" method="post">
         {% csrf_token %}
         {{ form }}
         <button class="form-submit">Submit</button>

@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    DRW
+{% endblock %}
+
+{% block content %}
+    <h1 style="text-align: center;">From which company do you want to post a vacancy</h1>
+
+    <div class="button-container" id="button-container">
+        {% for company in companies %}
+            <button class="item-button"
+                    onclick="window.location.href='{% url 'new-vacancy' company.name|slugify %}'">
+                {{ company.name }}
+            </button>
+        {% empty %}
+            <p>You have no company profile</p>
+        {% endfor %}
+    </div>
+{% endblock %}

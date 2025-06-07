@@ -31,7 +31,7 @@ def show_toolbar(request):
 
 
 DEBUG_TOOLBAR_CONFIG = {
-  "SHOW_TOOLBAR_CALLBACK" : show_toolbar,
+  "SHOW_TOOLBAR_CALLBACK": show_toolbar,
 }
 
 ALLOWED_HOSTS = []
@@ -96,7 +96,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'djsite.wsgi.application'
 
-AUTH_USER_MODEL = 'api.TheUser'
+AUTH_USER_MODEL = 'api.User'
 
 
 # Database

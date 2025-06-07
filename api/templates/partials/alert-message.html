@@ -1,0 +1,13 @@
+<!--  To use the alert, just render the page with context, that contains "alert_message"  -->
+{% if alert_message %}
+    <div class="alert alert-warning alert-dismissible fade show" role="alert" id="alert-{{ alert_id }}">
+        <p>{{ alert_message }}</p>
+        {% if not auto_hide %}
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
+        {% endif %}
+    </div>
+{% endif %}
+
+<!-- Das ist leider komplett nutzlos, da django shcon django.contrib.messages hat -->
