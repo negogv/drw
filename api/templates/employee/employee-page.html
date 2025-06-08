@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+
+{% block title %}
+DRW
+{% endblock %}
+
+{% block content %}
+
+<div class="container">
+    <!-- hier könnte ein logo sein -->
+    <!-- <h1 style="text-align: center;">{{ employee.name }}</h1> -->
+    <div>
+        <div id="employee-info">
+            <!-- add a logo to eigene column -->
+            <h1 class="row">
+                {{ employee.user.first_name }} {{ employee.user.last_name }}
+            </h1>
+            <div class="row d-flex justify-content-between">
+                <div class="p-2">
+                    {{ employee.city }}
+                </div>
+                <div class="p-2">
+                    <div>
+                        {{ employee.email }}
+                    </div>
+                    <div>
+                        {{ employee.phone }}
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="employee-description">
+            <p>
+                {{ employee.text|linebreaks }}
+            </p>
+        </div>
+        <div id="cv of the employee">
+            <!-- tbh idk how cv will work -->
+            {% if employee.cv %}
+            <h4>
+                {{ employee.first_name }}'s CV
+            </h4>
+            {{ employee.cv }}
+            {% endif %}
+        </div>
+    </div>
+
+</div>
+{% endblock %}

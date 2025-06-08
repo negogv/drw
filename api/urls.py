@@ -11,24 +11,26 @@ urlpatterns = [
     path('register/c/', views.register_company_view, name='register-company'),
     path('register/e/', views.register_employee_view, name='register-employee'),
     path('login/', views.login_view, name='login'),
+    path('logout/', views.logout_view, name='logout'),
 
     path('home/', views.HomeView.as_view(), name='home'),
     path('employee-page/', views.EmployeePageView.as_view(), name='employee-page'),
 
     path('company/', views.CompanyListCreate.as_view()),
-    path('company/<int:pk>/', views.CompanyRetrieveUpdateDestroy.as_view()),
+    path('company/<int:company_id>/', views.company_page_view, name='company-page'),
 
     path('employee/', views.EmployeeListCreate.as_view({'get': 'list', 'post': 'create'})),
-    path('employee/<int:pk>/', views.EmployeeRetrieveUpdateDestroy.as_view()),
+    path('employee/<int:employee_id>/', views.employee_page_view, name='employee-page'),
 
     path('media/<str:model>/<int:pk>', views.MediaFileCreate.as_view()),
     path('media/<int:pk>/', views.MediaFileRetrieve.as_view()),
 
     path('vacancy/', views.VacancyListCreate.as_view()),
     # path('vacancy/<str:tag>/', views.VacancyListByTags.as_view()),  # TODO: replace with search func
+    # TODO: change vacancy endpoint
     path('vacancy/search/', views.VacancyListBySalary.as_view()),
     path('vacancy/<int:vacancy_id>/', views.show_vacancy_view, name='show-vacancy'),
-    path('vacancy/company-choice/', views.vacancy_company_choice_view, name='company-choice'),
+    path('vacancy/new/', views.new_vacancy_view, name='vacancy-company-choice'),
     path('vacancy/new/<int:company_id>/', views.new_vacancy_view, name='new-vacancy'),
     path('search_tags/', views.search_tags, name='search_tags'),
 

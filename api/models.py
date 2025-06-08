@@ -87,7 +87,7 @@ class Employee(models.Model):
     created = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return TheUser.objects.get(self.user)
+        return TheUser.objects.get(id=self.user).first_name + TheUser.objects.get(id=self.user)
         # return self.user_id.name
 
 

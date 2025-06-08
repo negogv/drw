@@ -6,7 +6,7 @@ from django.views.generic import TemplateView
 from django.views.decorators.http import require_GET
 from django.db import transaction
 from django.contrib.auth.forms import AuthenticationForm
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from rest_framework.views import APIView
@@ -248,7 +248,7 @@ def login_user(request):
     if request.user.is_authenticated:
         return
 
-    if request.method == 'POST':
+    if request.method == 'POST':  # do I really need to specify post method?
         username = request.POST['username'].lower()
         password = request.POST['password1'] or request.POST['password']
 
@@ -259,6 +259,14 @@ def login_user(request):
             return True
         else:
             return Response('Username or password is incorrect', status=status.HTTP_400_BAD_REQUEST)
+
+
+def logout_view(request):
+    if request.method == 'GET':
+        return render(request, 'registration/logout.html')
+    elif request.method == 'POST':
+        logout(request)
+        return redirect('home')
 
 
 def register_view(request):
@@ -339,13 +347,14 @@ def is_authenticated_shortcut_view(request):  # for development
         return HttpResponse("User isn't authenticated", status=status.HTTP_401_UNAUTHORIZED)
 
 
-def vacancy_company_choice_view(request):
+def company_choice_view(request, redirect_to):
     if not request.user.is_authenticated:
         return HttpResponse("You can't make a vacancy, please authorise", status=status.HTTP_401_UNAUTHORIZED)
     if not Company.objects.filter(user=request.user.id).first():
         return HttpResponse("You aren't an company, you can't make a vacancy", status=status.HTTP_401_UNAUTHORIZED)
     companies = Company.objects.filter(user=request.user.id)
-    context = {'companies': companies}
+    context = {'companies': companies,
+               'redirect_to': redirect_to}
 
     return render(request, 'vacancy/company-choice.html', context)
 
@@ -361,6 +370,8 @@ def vacancy_company_choice_view(request):
 
 @login_required
 def new_vacancy_view(request, **kwargs):
+    if not bool(kwargs):
+        return company_choice_view(request, 'new-vacancy')
     company = Company.objects.get(id=kwargs['company_id'])
     if company.user.id != request.user.id:
         messages.warning(request, "You don't own this company")
@@ -391,10 +402,29 @@ def search_tags(request):
 
 
 def show_vacancy_view(request, **kwargs):
-    vacancy = Vacancy.objects.get(id=kwargs['vacancy_id'])
-    tags = vacancy.tags.all()
+    vacancy = Vacancy.objects.filter(id=kwargs['vacancy_id']).first()
+    if not vacancy:
+        messages.error(request, 'There is no such a vacancy')
+        return redirect('home')
     return render(request, 'vacancy/show-vacancy.html', {'vacancy': vacancy})
 
+
+def company_page_view(request, **kwargs):
+    company = Company.objects.filter(id=kwargs['company_id']).first()
+    if not company:
+        messages.error(request, 'There is no such a company')
+        return redirect('home')
+    vacancies = Vacancy.objects.filter(owner=company.id)
+    return render(request, 'company/company-page.html', {'company': company,
+                                                         'vacancies': vacancies})
+
+
+def employee_page_view(request, **kwargs):
+    employee = Employee.objects.filter(id=kwargs['employee_id']).first()
+    if not employee:
+        messages.error(request, 'There is no such an employee')
+        return redirect('home')
+    return render(request, 'employee/employee-page.html', {'employee': employee})
 
 
 def test_view(request):

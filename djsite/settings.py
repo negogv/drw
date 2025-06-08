@@ -51,7 +51,8 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework.authtoken',
     'drf_yasg',
-    'ckeditor'
+    # 'ckeditor'  - cool app but doesn't necessary at the moment.
+    #               I will need this to improve texts with bold, italic etc. text
 ]
 
 SWAGGER_SETTINGS = {

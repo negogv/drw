@@ -5,12 +5,12 @@
 {% endblock %}
 
 {% block content %}
-    <h1 style="text-align: center;">From which company do you want to post a vacancy</h1>
+    <h1 style="text-align: center;">Choose one of your companies</h1>
 
     <div class="button-container" id="button-container">
         {% for company in companies %}
             <button class="item-button"
-                    onclick="window.location.href='{% url 'new-vacancy' company.id %}'">
+                    onclick="window.location.href='{% url redirect_to company.id %}'">
                 {{ company.name }}
             </button>
         {% empty %}

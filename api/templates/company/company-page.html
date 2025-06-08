@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+
+{% block title %}
+DRW
+{% endblock %}
+
+{% block content %}
+
+<div class="container">
+    <!-- hier könnte ein logo sein -->
+    <!-- <h1 style="text-align: center;">{{ company.name }}</h1> -->
+    <div>
+        <div id="company-info">
+            <!-- add a logo to eigene column -->
+            <h1 class="row">
+                {{ company.name }}
+            </h1>
+            <div class="row d-flex justify-content-between">
+                 <div class="p-2">
+                    {{ company.city }}
+                </div>
+                <div class="p-2">
+                    <div class="p-2">
+                        {{ company.email }}
+                    </div>
+                    <div class="p-2">
+                        {{ company.phone }}
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="company-description">
+            <p>
+                {{ company.text|linebreaks }}
+            </p>
+        </div>
+        <div id="vacancies of the company">
+            <h4>
+                Vacancies of this company
+            </h4>
+            {% for vacancy in vacancies %}
+                <a class="btn btn-dark" href="/api/vacancy/{{ vacancy.id }}">
+                    {{ vacancy.title }}
+                </a>
+            {% empty %}
+            {% endfor %}
+        </div>
+    </div>
+
+</div>
+{% endblock %}
