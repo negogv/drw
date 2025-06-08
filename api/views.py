@@ -1,5 +1,5 @@
 import copy
-
+import requests
 from django.shortcuts import render, redirect, get_object_or_404
 import mysql.connector
 from django.http import HttpResponse, JsonResponse
@@ -110,14 +110,15 @@ class VacancyListBySalary(generics.ListAPIView):
 class ModelSearchList(APIView):
     # TODO: This view should search for a model by its parameters
     def get(self, request: Request, **kwargs):
-        min_salary = request.query_params.get('min-salary', 0)
-        max_salary = request.query_params.get('max-salary', 2147483647)
-        name = request.query_params.get('name', 2147483647)
+        min_salary = request.query_params.get('min-salary')
+        max_salary = request.query_params.get('max-salary')
+        name = request.query_params.get('name')
+        salary_type = request.query_params.get('salary-type')
 
         model_name = kwargs['model'].capitalize()
         instance = getattr(api.models, model_name).objects\
             .filter(salary__gte=min_salary)\
-            .filter(salary__lte=max_salary)
+            .filter(salary__lte=max_salary).filter(salary_type__in=salary_type)
 
 
 
@@ -242,7 +243,7 @@ class Test(APIView):
         return render(request, 'registration/role-choice.html')
 
 
-def role_choice_view(request):
+def role_choice_view(request):  # replace with JS
     if request.method == 'GET':
         return render(request, 'registration/role-choice.html')
 
@@ -384,6 +385,18 @@ def company_choice_view(request, redirect_to: str):
                'redirect_to': redirect_to}
 
     return render(request, 'vacancy/company-choice.html', context)
+
+
+def company_profile_view(request):
+    return company_choice_view(request, 'company-page')
+
+
+def user_profile(request):
+    pass
+
+
+def vacancies_view(request):
+    pass
 
 
 # def new_vacancy_view(request, **kwargs):
@@ -545,5 +558,16 @@ def employee_edit_view(request, **kwargs):
 
 
 def test_view(request):
-    messages.error(request, 'bla bla bla')
-    return redirect('home')
+    if request.method == 'POST':
+        response = requests.request(method='get', url='http://127.0.0.1:8000/api/test', params={'colors': ['red', 'green', 'blue']})
+        return response
+    elif request.method == 'GET':
+        params = dict(request.GET)
+        print(params['colors'])  # params == {'colors': ['red', 'green', 'blue']}
+        return render(request, '/api/test/')
+    else:
+        return HttpResponse(request)
+        # return HttpResponse(request.GET)
+
+def test_slash_view(request):
+    return render(request, 'test.html')

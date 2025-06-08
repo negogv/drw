@@ -1,0 +1,22 @@
+.alert-error {
+  color: #721c24;
+  background-color: #f8d7da;
+  border-color: #f5c6cb;
+}
+.alert-error hr {
+  border-top-color: #f1b0b7;
+}
+.alert-error .alert-link {
+  color: #491217;
+}
+.alert-debug {
+  color: #1b1e21;
+  background-color: #d6d8d9;
+  border-color: #c6c8ca;
+}
+.alert-debug hr {
+  border-top-color: #b9bbbe;
+}
+.alert-debug .alert-link {
+  color: #040505;
+}

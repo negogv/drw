@@ -12,12 +12,15 @@ urlpatterns = [
     path('register/e/', views.register_employee_view, name='register-employee'),
     path('login/', views.login_view, name='login'),
     path('logout/', views.logout_view, name='logout'),
+    path('profile/', views.user_profile, name='profile'),  # user info and link to employee page
+                                                           # cuz I don't want to call db from navbar to get employee id
 
     path('home/', views.HomeView.as_view(), name='home'),
 
     path('company/', views.CompanyListCreate.as_view()),
     path('company/<int:company_id>/', views.company_page_view, name='company-page'),
     path('company/edit/<int:company_id>/', views.company_edit_view, name='edit-company'),
+    path('company/profile/', views.company_profile_view, name='company-profile'),
 
     path('employee/', views.EmployeeListCreate.as_view({'get': 'list', 'post': 'create'})),
     path('employee/<int:employee_id>/', views.employee_page_view, name='employee-page'),
@@ -29,6 +32,7 @@ urlpatterns = [
     path('vacancy/', views.VacancyListCreate.as_view()),
     # path('vacancy/<str:tag>/', views.VacancyListByTags.as_view()),  # TODO: replace with search func
     # TODO: change vacancy endpoint
+    path('vacancies/', views.vacancies_view, name='all-vacancies'),
     path('vacancy/edit/<int:vacancy_id>/', views.vacancy_edit_view, name='edit-vacancy'),
     path('vacancy/search/', views.VacancyListBySalary.as_view()),
     path('vacancy/<int:vacancy_id>/', views.show_vacancy_view, name='show-vacancy'),
@@ -36,7 +40,8 @@ urlpatterns = [
     path('vacancy/new/<int:company_id>/', views.new_vacancy_view, name='new-vacancy'),
     path('search_tags/', views.search_tags, name='search_tags'),
 
-    path('test/', views.test_view, name='test')
+    path('test/', views.test_slash_view, name='test-slash'),
+    path('test', views.test_view, name='test')
     # path('', include('django.contrib.auth.urls')),
 
 ]

@@ -4,9 +4,35 @@
     <div id="navbarNav">
         <ul class="navbar-nav ml-auto">
             {% if user.is_authenticated %}
-            <li class="nav-item">
-                <a class="nav-link" href="#">Employee page</a>
-            </li>
+                {% if user.role == 'employee' %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="/api/vacancies/">Vacancies</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/api/profile/">My profile</a>
+                    </li>
+                {% elif user.role == 'company' %}
+                    <div>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/api/vacancies/">Vacancies</a>
+                        </li>
+                    </div>
+                    <div>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/api/company/profile/">My companies</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/api/profile/">My profile</a>
+                        </li>
+                    </div>
+                {% endif %}
+            {% else %}
+                <li class="nav-item">
+                    <a class="nav-link" href="/api/register/">Register</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/api/login/">Log in</a>
+                </li>
             {% endif %}
 
         </ul>
