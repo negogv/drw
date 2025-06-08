@@ -1,3 +1,5 @@
+import copy
+
 from django.shortcuts import render, redirect, get_object_or_404
 import mysql.connector
 from django.http import HttpResponse, JsonResponse
@@ -9,6 +11,7 @@ from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from django.utils.safestring import mark_safe
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.request import Request
@@ -244,21 +247,28 @@ def role_choice_view(request):
         return render(request, 'registration/role-choice.html')
 
 
-def login_user(request):
+def login_user(request, password=None):
     if request.user.is_authenticated:
         return
 
     if request.method == 'POST':  # do I really need to specify post method?
         username = request.POST['username'].lower()
-        password = request.POST['password1'] or request.POST['password']
+        if password is not None:
+            pass
+        elif 'password1' in request.POST:
+            password = request.POST['password1']
+        elif 'password' in request.POST:
+            password = request.POST['password']
+        else:
+            return HttpResponse('Unknown error', status=status.HTTP_400_BAD_REQUEST)
 
         user = TheUser.objects.filter(username=username).first()
 
-        if user is not None:
+        if user and user.check_password(password):
             login(request, user)
             return True
         else:
-            return Response('Username or password is incorrect', status=status.HTTP_400_BAD_REQUEST)
+            return Response(f'Username or password is incorrect', status=status.HTTP_400_BAD_REQUEST)
 
 
 def logout_view(request):
@@ -266,7 +276,7 @@ def logout_view(request):
         return render(request, 'registration/logout.html')
     elif request.method == 'POST':
         logout(request)
-        return redirect('home')
+        return redirect('register')
 
 
 def register_view(request):
@@ -278,9 +288,9 @@ def register_view(request):
         if form.is_valid():
             role = form.instance.role
             form.save()
-            login_user(request)
+            login_user(request, TheUser.objects.get(username=request.POST['username']).password)
             # return redirect('home')
-            return redirect(f'{role}/')
+            return redirect(f'register-{role}')
     else:
         form = RegistrationForm()
     return render(request, "registration/register.html", {"form": form})
@@ -288,7 +298,12 @@ def register_view(request):
 
 def register_company_view(request):
     if not request.user.is_authenticated:
-        redirect('register')
+        return redirect('register')
+    if request.user.role == "e":
+        messages.error(request, mark_safe("You are already an employee. "
+                                          "To create a company you should make "
+                                          "<a href='/api/logout/'>register a new account</a>"))
+        return redirect('home')
     if request.method == 'POST':
         form = CompanyRegistrationForm(request.POST)
         if form.is_valid():
@@ -301,7 +316,9 @@ def register_company_view(request):
             return redirect('home')
     else:
         form = CompanyRegistrationForm(initial={'name': request.user.first_name + ' ' + request.user.last_name})
-    return render(request, 'registration/company-registration.html', {'form': form})
+    return render(request, 'company/company-registration.html', {'form': form,
+                                                                 'h1': 'New company',
+                                                                 'form_action': '/api/register/c/'})
 
 
 def register_employee_view(request):
@@ -320,7 +337,9 @@ def register_employee_view(request):
             return redirect('home')
     else:
         form = EmployeeRegistrationForm(initial={'phone': request.user.phone, 'email': request.user.email})
-    return render(request, 'registration/employee-registration.html', {'form': form})
+    return render(request, 'employee/employee-registration.html', {'form': form,
+                                                                   'h1': 'New employee',
+                                                                   'form_action': '/api/register/e/'})
 
 
 def login_view(request):
@@ -333,7 +352,7 @@ def login_view(request):
             messages.success(request, "You have logged in!")
             return redirect('home')  # TODO: redirect to user page or something
         else:
-            messages.error(request, f"Something went wrong\n{logging.data}")
+            messages.error(request, f"Something went wrong: {logging.data}")
             return redirect('login')
     else:
         form = LoginForm()
@@ -347,11 +366,19 @@ def is_authenticated_shortcut_view(request):  # for development
         return HttpResponse("User isn't authenticated", status=status.HTTP_401_UNAUTHORIZED)
 
 
-def company_choice_view(request, redirect_to):
+def company_choice_view(request, redirect_to: str):
+    """
+    request - request
+    redirect_to - path name of the link where you need a company_id as a kwarg
+    """
     if not request.user.is_authenticated:
-        return HttpResponse("You can't make a vacancy, please authorise", status=status.HTTP_401_UNAUTHORIZED)
+        messages.error(request, "Please authorise first")
+        return redirect('register')
     if not Company.objects.filter(user=request.user.id).first():
-        return HttpResponse("You aren't an company, you can't make a vacancy", status=status.HTTP_401_UNAUTHORIZED)
+        messages.error(request,
+                       mark_safe("You don't own a company. "
+                                 "If you want to create a company use <a href='/api/register/c/'>this link</a>"))
+        return redirect('home')
     companies = Company.objects.filter(user=request.user.id)
     context = {'companies': companies,
                'redirect_to': redirect_to}
@@ -372,10 +399,13 @@ def company_choice_view(request, redirect_to):
 def new_vacancy_view(request, **kwargs):
     if not bool(kwargs):
         return company_choice_view(request, 'new-vacancy')
-    company = Company.objects.get(id=kwargs['company_id'])
+    company = Company.objects.filter(id=kwargs['company_id']).first()
+    if not company:
+        messages.error(request, 'There is no such a company')
+        redirect('home')
     if company.user.id != request.user.id:
         messages.warning(request, "You don't own this company")
-        return redirect('company-choice')
+        return company_choice_view(request, 'new-vacancy')
     if request.method == 'POST':
         form = NewVacancyForm(request.POST)
         if form.is_valid():
@@ -406,7 +436,60 @@ def show_vacancy_view(request, **kwargs):
     if not vacancy:
         messages.error(request, 'There is no such a vacancy')
         return redirect('home')
-    return render(request, 'vacancy/show-vacancy.html', {'vacancy': vacancy})
+    is_owner = False
+    if request.user == vacancy.owner.user:
+        is_owner = True
+    return render(request, 'vacancy/show-vacancy.html', {'vacancy': vacancy,
+                                                         'is_owner': is_owner})
+
+
+@login_required
+def vacancy_edit_view(request, **kwargs):
+    vacancy = Vacancy.objects.filter(id=kwargs['vacancy_id']).first()
+    if not vacancy:
+        messages.error(request, 'There is no such a vacancy')
+        return redirect('home')
+    if vacancy.owner.user != request.user:
+        messages.error(request, 'You can not edit this vacancy')
+        return redirect('home')
+    if request.method == 'POST':
+        form = NewVacancyForm(request.POST)
+        if form.is_valid():
+            vacancy.tags.set(form.cleaned_data.pop('tags'))
+            Vacancy.objects.update_or_create(id=vacancy.id, defaults=form.cleaned_data)
+            return redirect('home')
+    else:
+        initial = dict()
+        for field in Vacancy._meta.get_fields()[1:]:
+            initial.update({field.name: vacancy.serializable_value(field.name)})
+        form = NewVacancyForm(initial=initial)
+    return render(request, 'vacancy/create_vacancy.html', {'form': form})
+
+
+@login_required
+def company_edit_view(request, **kwargs):
+    company = Company.objects.filter(id=kwargs['company_id']).first()
+    if not company:
+        messages.error(request, 'There is no such a company')
+        return redirect('home')
+    if company.user != request.user:
+        messages.error(request, 'You can not edit this company')
+        return redirect('home')
+    if request.method == 'POST':
+        form = EmployeeRegistrationForm(request.POST)
+        if form.is_valid():
+            Company.objects.update_or_create(id=company.id, defaults=form.cleaned_data)
+            messages.success(request, "Company info was successfully updated!")
+            return redirect(f'/api/company/{kwargs["company_id"]}')
+    else:
+        initial = dict()
+        for field in Company._meta.get_fields()[2:]:
+            initial.update({field.name: company.serializable_value(field.name)})
+        form = EmployeeRegistrationForm(initial=initial)
+    return render(request, 'company/company-registration.html', {'form': form,
+                                                                 'h1': 'Edit company info',
+                                                                 'form_action':
+                                                                     f'/api/company/edit/{kwargs["company_id"]}/'})
 
 
 def company_page_view(request, **kwargs):
@@ -415,8 +498,12 @@ def company_page_view(request, **kwargs):
         messages.error(request, 'There is no such a company')
         return redirect('home')
     vacancies = Vacancy.objects.filter(owner=company.id)
+    is_owner = False
+    if request.user == company.user:
+        is_owner = True
     return render(request, 'company/company-page.html', {'company': company,
-                                                         'vacancies': vacancies})
+                                                         'vacancies': vacancies,
+                                                         'is_owner': is_owner})
 
 
 def employee_page_view(request, **kwargs):
@@ -424,7 +511,37 @@ def employee_page_view(request, **kwargs):
     if not employee:
         messages.error(request, 'There is no such an employee')
         return redirect('home')
-    return render(request, 'employee/employee-page.html', {'employee': employee})
+    is_owner = False
+    if request.user == employee.user:
+        is_owner = True
+    return render(request, 'employee/employee-page.html', {'employee': employee,
+                                                           'is_owner': is_owner})
+
+
+@login_required
+def employee_edit_view(request, **kwargs):
+    employee = Employee.objects.filter(id=kwargs['employee_id']).first()
+    if not employee:
+        messages.error(request, 'There is no such a profile')
+        return redirect('home')
+    if employee.user != request.user:
+        messages.error(request, 'You can not edit this profile')
+        return redirect('home')
+    if request.method == 'POST':
+        form = EmployeeRegistrationForm(request.POST)
+        if form.is_valid():
+            Employee.objects.update_or_create(id=employee.id, defaults=form.cleaned_data)
+            messages.success(request, "Your profile was successfully updated!")
+            return redirect(f'/api/employee/{kwargs["employee_id"]}')
+    else:
+        initial = dict()
+        for field in Employee._meta.get_fields():
+            initial.update({field.name: employee.serializable_value(field.name)})
+        form = EmployeeRegistrationForm(initial=initial)
+    return render(request, 'employee/employee-registration.html', {'form': form,
+                                                                   'h1': 'Edit employee profile',
+                                                                   'form_action':
+                                                                       f'/api/employee/edit/{kwargs["employee_id"]}/'})
 
 
 def test_view(request):

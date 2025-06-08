@@ -6,9 +6,20 @@
 
 {% block content %}
     <h1>Register a New User</h1>
-    <form class="form-with-validation" action="" method="post">
-        {% csrf_token %}
-        {{ form }}
-        <button class="form-submit">Submit</button>
-    </form>
+    <div class="row">
+        <form class="col form-with-validation" action="/api/register/" method="post">
+            {% csrf_token %}
+            {{ form }}
+            <button class="form-submit">Submit</button>
+        </form>
+        <div class="col">
+            <h3>
+                Are you already registered?
+            </h3>
+            <a class="btn btn-primary" href="/api/login/">
+                Log in
+            </a>
+        </div>
+    </div>
+
 {% endblock %}

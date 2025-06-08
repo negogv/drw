@@ -5,8 +5,8 @@
 {% endblock %}
 
 {% block content %}
-    <h1>New employee</h1>
-    <form class="form" action="/api/register/e/" method="post">
+    <h1>{{ h1 }}</h1>
+    <form class="form" action="{{ form_action }}" method="post">
         {% csrf_token %}
         {{ form }}
         <button class="form-submit">Submit</button>

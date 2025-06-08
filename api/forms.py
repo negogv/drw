@@ -48,6 +48,7 @@ class CompanyRegistrationForm(forms.Form):
     )
     text = forms.CharField(max_length=400, widget=forms.TextInput(attrs={'placeholder': 'Tell us more about you!'}),
                            required=False)
+    # TODO: text = TextField
     media_array = forms.CharField(max_length=80)  # TODO: media mechanism
 
 
@@ -64,15 +65,15 @@ class EmployeeRegistrationForm(forms.Form):
         queryset=City.objects.exclude(id=1),
         empty_label="Select a city"
     )
-    # phone = forms.CharField(
-    #     max_length=20,
-    #     validators=[
-    #         RegexValidator(
-    #             regex=r'^\+?1?\d{9,15}$',  # Example regex for international phone numbers
-    #             message="Phone number must be entered in the format: '+999999999'. Up to 15 digits allowed.")
-    #     ]
-    # )
-    phone = forms.CharField(max_length=20, required=True, label="Contact phone")
+    phone = forms.CharField(
+        max_length=20,
+        validators=[
+            RegexValidator(
+                regex=r'^\+?1?\d{9,15}$',  # Example regex for international phone numbers
+                message="Phone number must be entered in the format: '+999999999'. Up to 15 digits allowed.")
+        ]
+    )
+    # phone = forms.CharField(max_length=20, required=True, label="Contact phone")
     email = forms.EmailField(required=True, label='Contact email')
     text = forms.CharField(max_length=400,
                            widget=forms.TextInput(attrs={'placeholder': 'Tell us more about you!'}),

@@ -1,11 +1,12 @@
 from django.db import models
 from django.contrib.auth.models import UserManager, AbstractUser
+from django.core.validators import RegexValidator
 
 
 class TheUser(AbstractUser):
     class RoleChoices(models.TextChoices):
-        COMPANY = 'c'
-        EMPLOYEE = 'e'
+        COMPANY = 'company'
+        EMPLOYEE = 'employee'
     username = models.CharField(
         "username",
         max_length=20,
@@ -14,12 +15,19 @@ class TheUser(AbstractUser):
         validators=[AbstractUser.username_validator],
         error_messages={"unique": "A user with that username already exists."}
     )
-    phone = models.CharField(max_length=20)
+    phone = models.CharField(max_length=20,
+                             validators=[
+                                 RegexValidator(
+                                     regex=r'^\+?1?\d{9,15}$',  # Example regex for international phone numbers
+                                     message="Phone number must be entered in the format: '+000123456789'. "
+                                             "Up to 15 digits allowed.")
+                             ]
+                             )
     REQUIRED_FIELDS = ['email', 'first_name', 'last_name']
     user_permissions = None
     groups = None
     email = models.EmailField("email address")
-    role = models.CharField(max_length=1, choices=RoleChoices.choices)
+    role = models.CharField(max_length=8, choices=RoleChoices.choices)
 
     def __str__(self):
         return "{}".format(self.username)
@@ -79,8 +87,8 @@ class Employee(models.Model):
     user = models.ForeignKey(TheUser, on_delete=models.CASCADE)
     country = models.ForeignKey(Country, on_delete=models.SET(1))
     city = models.ForeignKey(City, on_delete=models.SET(1))
-    phone = models.IntegerField(null=True)  # TODO: checkpoint if the user wants to remain the same number/email
-    email = models.CharField(max_length=40, null=True)  # TODO: for the others as for registration
+    phone = models.CharField(max_length=25)  # TODO: checkpoint if the user wants to remain the same number/email
+    email = models.EmailField("email address")  # TODO: for the others as for registration
     text = models.TextField(max_length=400, null=True)
     media_array = models.CharField(max_length=80, null=True)
     cv = models.FileField(null=True, editable=True)

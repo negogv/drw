@@ -15,6 +15,9 @@ DRW
             <h1 class="row">
                 {{ company.name }}
             </h1>
+            {% if is_owner == True %}
+                <a class="btn btn-primary" href="/api/company/edit/{{ company.id }}">Edit company profile</a>
+            {% endif %}
             <div class="row d-flex justify-content-between">
                  <div class="p-2">
                     {{ company.city }}
@@ -43,6 +46,9 @@ DRW
                     {{ vacancy.title }}
                 </a>
             {% empty %}
+                <p>
+                    This company has no vacancies
+                </p>
             {% endfor %}
         </div>
     </div>

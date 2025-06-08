@@ -9,6 +9,9 @@ DRW
 <div class="container">
     <h1 style="text-align: center;">{{ vacancy.title }}</h1>
     <div>
+        {% if is_owner == True %}
+            <a class="btn btn-primary" href="/api/vacancy/edit/{{ vacancy.id }}">Edit vacancy</a>
+        {% endif %}
         <div class="row" id="company-salary-info">
             <div class="col">
                 <!-- add a logo -->
