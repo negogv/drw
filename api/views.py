@@ -1,11 +1,13 @@
 from django.shortcuts import render, redirect, get_object_or_404
 import mysql.connector
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.core.files.uploadedfile import TemporaryUploadedFile
 from django.views.generic import TemplateView
+from django.views.decorators.http import require_GET
 from django.db import transaction
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth import authenticate, login
+from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -19,7 +21,7 @@ import api.models
 from .serializers import *
 from rest_framework.parsers import MultiPartParser, FormParser
 import os.path as path
-from .forms import RegistrationForm, LoginForm, EmployeeRegistrationForm, CompanyRegistrationForm
+from .forms import RegistrationForm, LoginForm, EmployeeRegistrationForm, CompanyRegistrationForm, NewVacancyForm
 # Create your views here.
 
 from django.contrib.auth.forms import UserCreationForm
@@ -348,14 +350,50 @@ def vacancy_company_choice_view(request):
     return render(request, 'vacancy/company-choice.html', context)
 
 
+# def new_vacancy_view(request, **kwargs):
+#     if not request.user.is_authenticated:
+#         return HttpResponse("You can't use this page, please authorise", status=status.HTTP_401_UNAUTHORIZED)
+#     company = Company.objects.get(name=kwargs['company_name'])
+#     if company.user != request.user.id:
+#         messages.warning(request, "You don't own this company")
+#         return redirect('company-choice')
+
+
+@login_required
 def new_vacancy_view(request, **kwargs):
-    if not request.user.is_authenticated:
-        return HttpResponse("You can't use this page, please authorise", status=status.HTTP_401_UNAUTHORIZED)
-    company = Company.objects.get(name=kwargs['company_name'])
-    if company.user != request.user.id:
+    company = Company.objects.get(id=kwargs['company_id'])
+    if company.user.id != request.user.id:
         messages.warning(request, "You don't own this company")
         return redirect('company-choice')
+    if request.method == 'POST':
+        form = NewVacancyForm(request.POST)
+        if form.is_valid():
+            vacancy = form.save(commit=False)
+            vacancy.owner = company
+            vacancy.save()
+            vacancy.tags.set(form.cleaned_data['tags'])
+            return redirect('home')
+    else:
+        form = NewVacancyForm()
 
+    return render(request, 'vacancy/create_vacancy.html', {'form': form})
+
+
+@require_GET
+def search_tags(request):
+    query = request.GET.get('tag_search', '')
+    if query:
+        tags = VacancyTag.objects.filter(name__icontains=query)[:10]
+        results = [{'id': tag.id, 'name': tag.name} for tag in tags]
+    else:
+        results = []
+    return JsonResponse({'results': results})
+
+
+def show_vacancy_view(request, **kwargs):
+    vacancy = Vacancy.objects.get(id=kwargs['vacancy_id'])
+    tags = vacancy.tags.all()
+    return render(request, 'vacancy/show-vacancy.html', {'vacancy': vacancy})
 
 
 

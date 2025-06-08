@@ -10,7 +10,7 @@
     <div class="button-container" id="button-container">
         {% for company in companies %}
             <button class="item-button"
-                    onclick="window.location.href='{% url 'new-vacancy' company.name|slugify %}'">
+                    onclick="window.location.href='{% url 'new-vacancy' company.id %}'">
                 {{ company.name }}
             </button>
         {% empty %}

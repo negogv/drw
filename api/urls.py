@@ -25,11 +25,13 @@ urlpatterns = [
     path('media/<int:pk>/', views.MediaFileRetrieve.as_view()),
 
     path('vacancy/', views.VacancyListCreate.as_view()),
-    path('vacancy/company-choice/', views.vacancy_company_choice_view, name='company-choice'),
-    path('new-vacancy/<str:company_name>/', views.new_vacancy_view, name='new-vacancy'),
-    path('vacancy/<int:pk>/', views.VacancyRetrieveUpdateDestroy.as_view()),
-    path('vacancy/<str:tag>/', views.VacancyListByTags.as_view()),
+    # path('vacancy/<str:tag>/', views.VacancyListByTags.as_view()),  # TODO: replace with search func
     path('vacancy/search/', views.VacancyListBySalary.as_view()),
+    path('vacancy/<int:vacancy_id>/', views.show_vacancy_view, name='show-vacancy'),
+    path('vacancy/company-choice/', views.vacancy_company_choice_view, name='company-choice'),
+    path('vacancy/new/<int:company_id>/', views.new_vacancy_view, name='new-vacancy'),
+    path('search_tags/', views.search_tags, name='search_tags'),
+
     path('test/', views.test_view, name='test')
     # path('', include('django.contrib.auth.urls')),
 

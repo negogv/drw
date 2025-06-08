@@ -99,7 +99,50 @@ class NewVacancyForm(forms.ModelForm):
         fields = ['title', 'text', 'salary', 'currency', 'salary_type', 'media_array', 'tags']
     title = forms.CharField(max_length=200,
                             widget=forms.TextInput(attrs={'placeholder': 'Name of the vacancy'}),
-                            required=True),
-    text = forms.CharField(max_length=5000,
-                           widget=forms.TextInput(attrs={'placeholder': 'More about the vacancy'}),
-                           required=True)
+                            required=True)
+    text = forms.Textarea(attrs={'placeholder': 'More about the vacancy'})
+    # text = forms.CharField(max_length=5000,
+    #                        widget=forms.TextInput(attrs={'placeholder': 'More about the vacancy'}),
+    #                        required=True)
+    salary = forms.IntegerField(widget=forms.TextInput(attrs={'placeholder': 'Name of the vacancy'}),
+                                required=True)
+    currency = forms.ModelChoiceField(queryset=Currency.objects.exclude(id=1),
+                                      empty_label="Select a currency")
+    salary_type = forms.ChoiceField(choices=Vacancy.SalaryTypeChoices.choices)
+    media_array = forms.CharField()
+    # tag_search = forms.CharField(
+    #     label='Search for tags',
+    #     required=False,
+    #     widget=forms.TextInput(attrs={
+    #         'placeholder': 'Search tags...',
+    #         'hx-get': '/search_tags/',
+    #         'hx-target': '#search-results',
+    #         'hx-trigger': 'keyup changed delay:500ms',
+    #         'hx-swap': 'innerHTML'}))
+    # tags = forms.ModelMultipleChoiceField(
+    #     queryset=VacancyTag.objects.none(),
+    #     widget=forms.CheckboxSelectMultiple,
+    #     required=False)
+    tag_search = forms.CharField(
+        label='Search for tags',
+        required=False,
+        widget=forms.TextInput(attrs={
+            'placeholder': 'Search tags...',
+            'hx-get': '/api/search_tags/',
+            'hx-target': '#search-results',
+            'hx-trigger': 'keyup changed delay:500ms',
+            'hx-swap': 'innerHTML'
+        })
+    )
+    tags = forms.ModelMultipleChoiceField(
+        queryset=VacancyTag.objects.none(),
+        widget=forms.CheckboxSelectMultiple,
+        required=False
+    )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if 'tags' in self.data:
+            tag_ids = [int(id) for id in self.data.getlist('tags')]
+            self.fields['tags'].queryset = VacancyTag.objects.filter(id__in=tag_ids)
+

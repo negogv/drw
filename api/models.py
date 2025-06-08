@@ -62,6 +62,8 @@ class Company(models.Model):       # TODO: Maybe add blank=True to unnecessary f
     id = models.AutoField(primary_key=True)
     user = models.ForeignKey(TheUser, on_delete=models.CASCADE)
     name = models.CharField(max_length=250, unique=True)
+    phone = models.CharField(max_length=20)
+    email = models.EmailField("email address")
     country = models.ForeignKey(Country, on_delete=models.SET(1))
     city = models.ForeignKey(City, on_delete=models.SET(1))
     text = models.TextField(null=True)
@@ -103,11 +105,11 @@ class Vacancy(models.Model):
     currency = models.ForeignKey(Currency, on_delete=models.SET(1))
     salary_type = models.CharField(max_length=1, choices=SalaryTypeChoices.choices)
     media_array = models.CharField(max_length=130, null=True)
-    tags = models.CharField(max_length=150, null=True)
+    tags = models.ManyToManyField(VacancyTag)
     created = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return self.id
+        return self.title
 
 
 class VacancyFeedback(models.Model):  # TODO: Fuck this shit

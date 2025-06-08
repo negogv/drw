@@ -37,6 +37,7 @@ class VacancySerializer(serializers.ModelSerializer):
                   'owner',
                   'text',
                   'salary',
+                  'currency',
                   'salary_type',
                   'media_array',
                   'tags',

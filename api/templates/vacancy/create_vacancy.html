@@ -1,0 +1,107 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h1>Create New Vacancy</h1>
+<form method="post" id="vacancy-form">
+    {% csrf_token %}
+
+    <div>
+        {{ form.title.label_tag }}
+        {{ form.title }}
+    </div>
+
+    <div>
+        {{ form.text.label_tag }}
+        {{ form.text }}
+    </div>
+
+    <div>
+        {{ form.salary.label_tag }}
+        {{ form.salary }}
+    </div>
+
+    <div>
+        {{ form.currency.label_tag }}
+        {{ form.currency }}
+    </div>
+
+    <div>
+        {{ form.salary_type.label_tag }}
+        {{ form.salary_type }}
+    </div>
+
+    <div>
+        {{ form.media_array.label_tag }}
+        {{ form.media_array }}
+    </div>
+
+
+
+    <div class="tag-selection">
+        <h3>Add Tags</h3>
+        {{ form.tag_search }}
+        <div id="search-results"></div>
+
+        <h4>Selected Tags</h4>
+        <div id="selected-tags">
+            {{ form.selected_tags }}
+        </div>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Create Vacancy</button>
+</form>
+
+<script src="https://unpkg.com/htmx.org@1.9.0"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Handle tag selection
+        document.body.addEventListener('htmx:afterRequest', function (evt) {
+            if (evt.detail.requestConfig.path.startsWith('/api/search_tags')) {
+                const response = JSON.parse(evt.detail.xhr.responseText);
+                const resultsContainer = document.getElementById('search-results');
+
+                if (response.results.length > 0) {
+                    let html = '<div class="tag-results">';
+                    response.results.forEach(tag => {
+                        html += `
+                        <div class="tag-result">
+                            <label>
+                                <input type="checkbox" name="tags" value="${tag.id}"
+                                    onchange="updateSelectedTags(this)">
+                                ${tag.name}
+                            </label>
+                        </div>
+                    `;
+                    });
+                    html += '</div>';
+                    resultsContainer.innerHTML = html;
+                } else {
+                    resultsContainer.innerHTML = '<p>No tags found</p>';
+                }
+            }
+        });
+    });
+
+        // Function to update selected tags without form submission
+        function updateSelectedTags(checkbox) {
+            const selectedTagsContainer = document.getElementById('selected-tags');
+            const tagId = checkbox.value;
+            const tagName = checkbox.parentNode.textContent.trim();
+
+            if (checkbox.checked) {
+                // Add tag to selected tags
+                const newTag = document.createElement('div');
+                newTag.className = 'tag-option';
+                newTag.innerHTML = `
+                <input type="checkbox" name="selected_tags" value="${tagId}" checked hidden>
+                <span>${tagName}</span>
+            `;
+                selectedTagsContainer.appendChild(newTag);
+            } else {
+                // Remove tag from selected tags
+                const tagToRemove = document.querySelector(`#selected-tags input[value="${tagId}"]`).parentNode;
+                tagToRemove.remove();
+            }
+        }
+</script>
+{% endblock %}

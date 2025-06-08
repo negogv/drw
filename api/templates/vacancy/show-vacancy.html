@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+
+{% block title %}
+DRW
+{% endblock %}
+
+{% block content %}
+
+<div class="container">
+    <h1 style="text-align: center;">{{ vacancy.title }}</h1>
+    <div>
+        <div class="row" id="company-salary-info">
+            <div class="col">
+                <!-- add a logo -->
+                <a href="/api/company/{{ vacancy.owner.id }}">
+                    {{ vacancy.owner.name }}
+                </a>
+                <div>
+                    {{ vacancy.owner.email }}
+                </div>
+                <div>
+                    {{ vacancy.owner.phone }}
+                </div>
+            </div>
+            <h6 class="col">
+                {{ vacancy.salary }} {{ vacancy.currency.code }}
+                in {{ vacancy.salary_type}}
+            </h6>
+        </div>
+        <div id="vacancy-info">
+            <p>
+                {{ vacancy.text|linebreaks }}
+            </p>
+            {% for tag in vacancy.tags.all %}
+                <a class="button" href="/api/vacancy/search/?tag={{ tag|slugify }}">
+                    {{ tag.name }}
+                </a>
+            {% empty %}
+            {% endfor %}
+            <p>
+                {{ vacancy.created }}
+            </p>
+            <!-- for loop for media files -->
+        </div>
+    </div>
+
+</div>
+{% endblock %}
