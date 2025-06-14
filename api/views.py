@@ -264,12 +264,17 @@ def login_user(request, password=None):
             return HttpResponse('Unknown error', status=status.HTTP_400_BAD_REQUEST)
 
         user = TheUser.objects.filter(username=username).first()
+        print(user.check_password(password))  # TODO: False
+        # ig the problem is in register view. It saves somehow a wrong password
+        if not user:
+            print('not user')
 
         if user and user.check_password(password):
             login(request, user)
             return True
         else:
-            return Response(f'Username or password is incorrect', status=status.HTTP_400_BAD_REQUEST)
+            return False
+            # return Response(f'Username or password is incorrect', status=status.HTTP_400_BAD_REQUEST)
 
 
 def logout_view(request):
@@ -289,11 +294,18 @@ def register_view(request):
         if form.is_valid():
             role = form.instance.role
             form.save()
-            login_user(request, TheUser.objects.get(username=request.POST['username']).password)
+            logged_in = login_user(request, TheUser.objects.get(username=request.POST['username']).password)
             # return redirect('home')
-            return redirect(f'register-{role}')
+            if logged_in:
+                return redirect(f'register-{role}')
+            else:
+                messages.error(request, 'shit happened')
+                return redirect('register')
+        else:
+            print(form.errors)
     else:
         form = RegistrationForm()
+    # return render(request, "registration/register-js.html")
     return render(request, "registration/register.html", {"form": form})
 
 
@@ -557,7 +569,7 @@ def employee_edit_view(request, **kwargs):
                                                                        f'/api/employee/edit/{kwargs["employee_id"]}/'})
 
 
-def test_view(request):
+def test_view(request):  # testing searching algorithm
     if request.method == 'POST':
         response = requests.request(method='get', url='http://127.0.0.1:8000/api/test', params={'colors': ['red', 'green', 'blue']})
         return response
@@ -569,5 +581,15 @@ def test_view(request):
         return HttpResponse(request)
         # return HttpResponse(request.GET)
 
+
 def test_slash_view(request):
     return render(request, 'test.html')
+
+
+def test2(request):  # doesn't work :(
+    # but works in other views :/
+    # keine Ahnung woran die Sache liegt
+    messages.error(request, 'error')
+    messages.success(request, 'success')
+    messages.info(request, 'info')
+    return redirect('home')

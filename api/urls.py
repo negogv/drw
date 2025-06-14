@@ -41,7 +41,8 @@ urlpatterns = [
     path('search_tags/', views.search_tags, name='search_tags'),
 
     path('test/', views.test_slash_view, name='test-slash'),
-    path('test', views.test_view, name='test')
+    path('test', views.test_view, name='test'),
+    path('test2/', views.test_slash_view, name='test2'),
     # path('', include('django.contrib.auth.urls')),
 
 ]

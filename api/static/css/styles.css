@@ -1,22 +1,35 @@
 .alert-error {
-  color: #721c24;
-  background-color: #f8d7da;
-  border-color: #f5c6cb;
+    color: #721c24;
+    background-color: #f8d7da;
+    border-color: #f5c6cb;
 }
 .alert-error hr {
-  border-top-color: #f1b0b7;
+    border-top-color: #f1b0b7;
 }
 .alert-error .alert-link {
-  color: #491217;
+    color: #491217;
 }
 .alert-debug {
-  color: #1b1e21;
-  background-color: #d6d8d9;
-  border-color: #c6c8ca;
+    color: #1b1e21;
+    background-color: #d6d8d9;
+    border-color: #c6c8ca;
 }
 .alert-debug hr {
-  border-top-color: #b9bbbe;
+    border-top-color: #b9bbbe;
 }
 .alert-debug .alert-link {
-  color: #040505;
+    color: #040505;
+}
+.form-control {
+    display: block;
+    width: 100%;
+    padding: 0.375rem 0.75rem;
+    font-size: 1rem;
+    line-height: 1.5;
+    color: #495057;
+    background-color: #fff;
+    background-clip: padding-box;
+    border: 1px solid #ced4da;
+    border-radius: 0.25rem;
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
 }
