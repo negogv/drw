@@ -1,5 +1,5 @@
-import copy
 import requests
+from django.urls import reverse
 from django.shortcuts import render, redirect, get_object_or_404
 import mysql.connector
 from django.http import HttpResponse, JsonResponse
@@ -254,18 +254,12 @@ def login_user(request, password=None):
 
     if request.method == 'POST':  # do I really need to specify post method?
         username = request.POST['username'].lower()
-        if password is not None:
-            pass
-        elif 'password1' in request.POST:
-            password = request.POST['password1']
-        elif 'password' in request.POST:
-            password = request.POST['password']
-        else:
+        if not password:
+            password = request.POST.get('password1') or request.POST.get('password')
+        if password is None:
             return HttpResponse('Unknown error', status=status.HTTP_400_BAD_REQUEST)
 
         user = TheUser.objects.filter(username=username).first()
-        print(user.check_password(password))  # TODO: False
-        # ig the problem is in register view. It saves somehow a wrong password
         if not user:
             print('not user')
 
@@ -294,35 +288,33 @@ def register_view(request):
         if form.is_valid():
             role = form.instance.role
             form.save()
-            logged_in = login_user(request, TheUser.objects.get(username=request.POST['username']).password)
-            # return redirect('home')
-            if logged_in:
-                return redirect(f'register-{role}')
+            logged_in = login_user(request, request.POST['password1'])
+            if logged_in:  # True
+                return JsonResponse({'redirectTo': reverse(f'register-{role}')})
             else:
-                messages.error(request, 'shit happened')
-                return redirect('register')
+                messages.error(request, 'password is incorrect')
+                return JsonResponse({'redirectTo': reverse('register')})
         else:
-            print(form.errors)
+            return Response(form.errors, status=status.HTTP_400_BAD_REQUEST)
     else:
         form = RegistrationForm()
-    # return render(request, "registration/register-js.html")
-    return render(request, "registration/register.html", {"form": form})
+    return render(request, "registration/register.html")
+    # return render(request, "registration/register.html", {"form": form})
 
 
 def register_company_view(request):
     if not request.user.is_authenticated:
         return redirect('register')
-    if request.user.role == "e":
+    if request.user.role == "employee":
         messages.error(request, mark_safe("You are already an employee. "
-                                          "To create a company you should make "
-                                          "<a href='/api/logout/'>register a new account</a>"))
+                                          "To create a company you should "
+                                          "<a href='/api/logout/'>log out</a> and register a new account"))
         return redirect('home')
     if request.method == 'POST':
         form = CompanyRegistrationForm(request.POST)
         if form.is_valid():
             form.data._mutable = True
             form.data.update({'user': request.user.id})
-            # form.data.update({'user_id': request.user.id})
             serializer = CompanySerializer(data=form.data)
             serializer.is_valid(raise_exception=True)
             serializer.save()
@@ -335,10 +327,16 @@ def register_company_view(request):
 
 
 def register_employee_view(request):
-    if not request.user.is_authenticated:
-        redirect('register')
-    if Employee.objects.filter(user=request.user.id).first():
-        return HttpResponse('You already registered as an employee', status=status.HTTP_307_TEMPORARY_REDIRECT)
+    # if not request.user.is_authenticated:
+    #     redirect('register')
+    # if request.user.role == 'company':
+    #     messages.error(request, mark_safe("You are already a company(to offer jobs). "
+    #                                       "To create an employee account you should "
+    #                                       "<a href='/api/logout/'>log out</a> and register a new account"))
+    #     return redirect('home')
+    # if Employee.objects.filter(user=request.user.id).first():
+    #     messages.warning(request, 'You already registered as an employee')
+    #     return redirect(f'/api/employee/{Employee.objects.get(user=request.user.id).id}/')
     if request.method == 'POST':
         form = EmployeeRegistrationForm(request.POST)
         if form.is_valid():
@@ -586,10 +584,12 @@ def test_slash_view(request):
     return render(request, 'test.html')
 
 
-def test2(request):  # doesn't work :(
-    # but works in other views :/
-    # keine Ahnung woran die Sache liegt
-    messages.error(request, 'error')
-    messages.success(request, 'success')
-    messages.info(request, 'info')
-    return redirect('home')
+def test2(request):
+    if request.method == 'GET':
+        return render(request, 'test.html')
+    elif request.method == 'POST':
+        print(f'request.POST: {request.POST}')
+        print('json response sent')
+        return JsonResponse({'redirectTo': reverse('home')})
+    else:
+        print('another error')

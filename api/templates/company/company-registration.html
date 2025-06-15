@@ -1,14 +1,16 @@
 {% extends 'base.html' %}
 
 {% block title %}
-    DRW
+DRW
 {% endblock %}
 
 {% block content %}
-    <h1>{{ h1 }}</h1>
-    <form class="form" action="{{ form_action }}" method="post">
-        {% csrf_token %}
-        {{ form }}
-        <button class="form-submit">Submit</button>
-    </form>
+<h1>{{ h1 }}</h1>
+<form class="form" action="{{ form_action }}" method="post">
+    {% csrf_token %}
+    {{ form }}
+    <button class="form-submit">Submit</button>
+</form>
+{% load static %}
+<script src="{% static 'js/edit-page.js' %}"></script>
 {% endblock %}

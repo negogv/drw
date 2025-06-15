@@ -1,25 +1,38 @@
 {% extends 'base.html' %}
 
 {% block title %}
-    DRW
+DRW-Register
 {% endblock %}
 
 {% block content %}
-    <h1>Register a New User</h1>
-    <div class="row">
-        <form class="col form-with-validation" action="/api/register/" method="post">
+<h1>Register a New User</h1>
+<div class="row">
+    <div class="col" id="form_div">
+        <h2 class="align-center">Your new username</h2>
+        <label>(necessary field)</label>
+        <form onsubmit="submitUsername()" id="username">
             {% csrf_token %}
-            {{ form }}
-            <button class="form-submit">Submit</button>
+            <input class="form-control" type="text" style="margin-bottom: .5rem;" id="username_field"
+                placeholder="username" autofocus required>
+            <button class="btn btn-primary" type="submit">
+                Save
+            </button>
         </form>
-        <div class="col">
-            <h3>
-                Are you already registered?
-            </h3>
-            <a class="btn btn-primary" href="/api/login/">
-                Log in
-            </a>
-        </div>
     </div>
-
+    <div class="col" id="is_reg_div">
+        <h3>
+            Are you already registered?
+        </h3>
+        <a class="btn btn-secondary" href="/api/login/">
+            Log in
+        </a>
+    </div>
+    <div class="col" id="inserted_data_div" style="display: none;">
+        <ul class="list-group" id="inserted_data_ul">
+            <!-- template for js script -->
+        </ul>
+    </div>
+</div>
+{% load static %}
+<script src="{% static 'js/register.js' %}"></script>
 {% endblock %}

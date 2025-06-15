@@ -1,14 +1,12 @@
 {% extends 'base.html' %}
 
 {% block title %}
-    DRW
+DRW
 {% endblock %}
 
 {% block content %}
-    <h1>{{ h1 }}</h1>
-    <form class="form" action="/api/test" method="post">
-        {% csrf_token %}
-        <input type="hidden" name="form_data" value="example_value">
-        <button class="form-submit">Submit</button>
-    </form>
+
+{% csrf_token %}
+<button onclick="testFunc()">Test the shit</button>
+
 {% endblock %}

@@ -140,7 +140,7 @@ function submitPhone() {
 }
 
 function submitPassword() {
-    // event.preventDefault();
+    event.preventDefault();
 
     var passwordField = document.getElementById("password_field");
     var repeatField = document.getElementById("password_repeat_field");
@@ -173,8 +173,24 @@ function submitPassword() {
                 "X-CSRFToken": TheUser.csrfmiddlewaretoken,
                 "Content-Type": "application/x-www-form-urlencoded",
             },
+            credentials: "include",
+            keepalive: true,
         })
-            .then((response) => response.json())
-            .then((json) => console.log(json));
+            .then((response) => {
+                if (!response.ok) {
+                    return response.json().then((err) => {
+                        throw err;
+                    });
+                }
+                return response.json();
+            })
+            .then((data) => {
+                if (data.redirectTo) {
+                    window.location.href = data.redirectTo;
+                }
+            })
+            .catch((error) => {
+                console.error("Fetch completely failed:", error);
+            });
     }
 }

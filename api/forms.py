@@ -59,11 +59,13 @@ class EmployeeRegistrationForm(forms.Form):
 
     country = forms.ModelChoiceField(
         queryset=Country.objects.exclude(id=1),
-        empty_label="Select a country"
+        empty_label="Select a country",
+        widget=forms.Select(attrs={'class': 'form-control'})
     )
     city = forms.ModelChoiceField(
         queryset=City.objects.exclude(id=1),
-        empty_label="Select a city"
+        empty_label="Select a city",
+        widget=forms.Select(attrs={'class': 'form-control'})
     )
     phone = forms.CharField(
         max_length=20,
@@ -71,15 +73,24 @@ class EmployeeRegistrationForm(forms.Form):
             RegexValidator(
                 regex=r'^\+?1?\d{9,15}$',  # Example regex for international phone numbers
                 message="Phone number must be entered in the format: '+999999999'. Up to 15 digits allowed.")
-        ]
+        ],
+        widget=forms.TextInput(attrs={'placeholder': '+123456789012',
+                                      'class': 'form-control'})
     )
     # phone = forms.CharField(max_length=20, required=True, label="Contact phone")
-    email = forms.EmailField(required=True, label='Contact email')
+    email = forms.EmailField(required=True,
+                             label='Contact email',
+                             widget=forms.TextInput(attrs={'placeholder': 'your.email@example.com',
+                                                           'class': 'form-control'}))
     text = forms.CharField(max_length=400,
-                           widget=forms.TextInput(attrs={'placeholder': 'Tell us more about you!'}),
+                           widget=forms.TextInput(attrs={'placeholder': 'Tell us more about you!',
+                                                         'class': 'form-control'}),
                            required=False)
     media_array = forms.CharField(max_length=80)
-    cv = forms.FileField(allow_empty_file=True, required=False)
+    cv = forms.FileField(allow_empty_file=True,
+                         required=False,
+                         widget=forms.FileInput(attrs={'class': 'form-control-file',
+                                                       'style': "margin-bottom: .5rem;"}))
 
 
 class LoginForm(forms.Form):

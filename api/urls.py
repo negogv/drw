@@ -42,7 +42,7 @@ urlpatterns = [
 
     path('test/', views.test_slash_view, name='test-slash'),
     path('test', views.test_view, name='test'),
-    path('test2/', views.test_slash_view, name='test2'),
+    path('test2/', views.test2, name='test2'),
     # path('', include('django.contrib.auth.urls')),
 
 ]
