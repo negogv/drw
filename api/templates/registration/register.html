@@ -6,6 +6,7 @@ DRW-Register
 
 {% block content %}
 <h1>Register a New User</h1>
+<div id="alert-div"></div>
 <div class="row">
     <div class="col" id="form_div">
         <h2 class="align-center">Your new username</h2>
@@ -13,7 +14,7 @@ DRW-Register
         <form onsubmit="submitUsername()" id="username">
             {% csrf_token %}
             <input class="form-control" type="text" style="margin-bottom: .5rem;" id="username_field"
-                placeholder="username" autofocus required>
+                placeholder="username" autofocus required="false">
             <button class="btn btn-primary" type="submit">
                 Save
             </button>
@@ -29,7 +30,7 @@ DRW-Register
     </div>
     <div class="col" id="inserted_data_div" style="display: none;">
         <ul class="list-group" id="inserted_data_ul">
-            <!-- template for js script -->
+            <!-- blank for js script -->
         </ul>
     </div>
 </div>

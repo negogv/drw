@@ -11,6 +11,21 @@
     </div>
 
     <div>
+        {{ form.country.label_tag }}
+        {{ form.country }}
+    </div>
+
+    <div>
+        {{ form.state.label_tag }}
+        {{ form.state }}
+    </div>
+
+    <div>
+        {{ form.city.label_tag }}
+        {{ form.city }}
+    </div>
+
+    <div>
         {{ form.text.label_tag }}
         {{ form.text }}
     </div>
@@ -28,6 +43,10 @@
     <div>
         {{ form.salary_type.label_tag }}
         {{ form.salary_type }}
+    </div>
+
+    <div>
+
     </div>
 
     <div>
@@ -51,57 +70,9 @@
     <button type="submit" class="btn btn-primary">Create Vacancy</button>
 </form>
 
-<script src="https://unpkg.com/htmx.org@1.9.0"></script>
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        // Handle tag selection
-        document.body.addEventListener('htmx:afterRequest', function (evt) {
-            if (evt.detail.requestConfig.path.startsWith('/api/search_tags')) {
-                const response = JSON.parse(evt.detail.xhr.responseText);
-                const resultsContainer = document.getElementById('search-results');
+{{ manyToManyFields|json_script:"manyToManyFields" }}
 
-                if (response.results.length > 0) {
-                    let html = '<div class="tag-results">';
-                    response.results.forEach(tag => {
-                        html += `
-                        <div class="tag-result">
-                            <label>
-                                <input type="checkbox" name="tags" value="${tag.id}"
-                                    onchange="updateSelectedTags(this)">
-                                ${tag.name}
-                            </label>
-                        </div>
-                    `;
-                    });
-                    html += '</div>';
-                    resultsContainer.innerHTML = html;
-                } else {
-                    resultsContainer.innerHTML = '<p>No tags found</p>';
-                }
-            }
-        });
-    });
-
-        // Function to update selected tags without form submission
-        function updateSelectedTags(checkbox) {
-            const selectedTagsContainer = document.getElementById('selected-tags');
-            const tagId = checkbox.value;
-            const tagName = checkbox.parentNode.textContent.trim();
-
-            if (checkbox.checked) {
-                // Add tag to selected tags
-                const newTag = document.createElement('div');
-                newTag.className = 'tag-option';
-                newTag.innerHTML = `
-                <input type="checkbox" name="selected_tags" value="${tagId}" checked hidden>
-                <span>${tagName}</span>
-            `;
-                selectedTagsContainer.appendChild(newTag);
-            } else {
-                // Remove tag from selected tags
-                const tagToRemove = document.querySelector(`#selected-tags input[value="${tagId}"]`).parentNode;
-                tagToRemove.remove();
-            }
-        }
-</script>
+{% load static %}
+<script src="{% static 'js/edit-vacancy.js' %}"></script>
+<script src="{% static 'js/location.js' %}"></script>
 {% endblock %}

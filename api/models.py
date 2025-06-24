@@ -33,23 +33,7 @@ class TheUser(AbstractUser):
         return "{}".format(self.username)
 
 
-class Country(models.Model):
-    name = models.CharField(max_length=100)
-    code = models.CharField(max_length=2)  # ISO country code
-
-    def __str__(self):
-        return self.name
-
-
-class City(models.Model):
-    name = models.CharField(max_length=100)
-    country = models.ForeignKey(Country, on_delete=models.CASCADE)
-
-    def __str__(self):
-        return f"{self.name}, {self.country}"
-
-
-class VacancyTag(models.Model):
+class Skill(models.Model):
     id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=30)
 
@@ -72,10 +56,12 @@ class Company(models.Model):       # TODO: Maybe add blank=True to unnecessary f
     name = models.CharField(max_length=250, unique=True)
     phone = models.CharField(max_length=20)
     email = models.EmailField("email address")
-    country = models.ForeignKey(Country, on_delete=models.SET(1))
-    city = models.ForeignKey(City, on_delete=models.SET(1))
+    country = models.CharField(max_length=250)
+    state = models.CharField(max_length=250)
+    city = models.CharField(max_length=250)
     text = models.TextField(null=True)
     media_array = models.CharField(max_length=80, null=True)
+    vacancies = models.ManyToManyField("Vacancy")
     created = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -85,13 +71,16 @@ class Company(models.Model):       # TODO: Maybe add blank=True to unnecessary f
 class Employee(models.Model):
     id = models.AutoField(primary_key=True)
     user = models.ForeignKey(TheUser, on_delete=models.CASCADE)
-    country = models.ForeignKey(Country, on_delete=models.SET(1))
-    city = models.ForeignKey(City, on_delete=models.SET(1))
-    phone = models.CharField(max_length=25)  # TODO: checkpoint if the user wants to remain the same number/email
-    email = models.EmailField("email address")  # TODO: for the others as for registration
+    name = models.CharField(max_length=250)
+    country = models.CharField(max_length=250)
+    state = models.CharField(max_length=250)
+    city = models.CharField(max_length=250)
+    phone = models.CharField(max_length=25)
+    email = models.EmailField("email address")
     text = models.TextField(max_length=400, null=True)
     media_array = models.CharField(max_length=80, null=True)
     cv = models.FileField(null=True, editable=True)
+    skills = models.ManyToManyField(Skill)
     created = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -101,36 +90,40 @@ class Employee(models.Model):
 
 class Vacancy(models.Model):
     class SalaryTypeChoices(models.TextChoices):
-        YEAR = 'y'
-        MONTH = 'm'
-        HOUR = 'h'
+        YEAR = 'year'
+        MONTH = 'month'
+        HOUR = 'hour'
 
     id = models.AutoField(primary_key=True)
     title = models.CharField(max_length=100)
     owner = models.ForeignKey(Company, on_delete=models.CASCADE)
+    city = models.CharField(max_length=250)
+    country = models.CharField(max_length=250)
     text = models.TextField(null=True)
     salary = models.IntegerField()
     currency = models.ForeignKey(Currency, on_delete=models.SET(1))
-    salary_type = models.CharField(max_length=1, choices=SalaryTypeChoices.choices)
+    salary_type = models.CharField(max_length=5, choices=SalaryTypeChoices.choices)
     media_array = models.CharField(max_length=130, null=True)
-    tags = models.ManyToManyField(VacancyTag)
+    tags = models.ManyToManyField(Skill)
+    is_online = models.BooleanField(default=False)
+    respondents = models.ManyToManyField(Employee)
     created = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return self.title
 
 
-class VacancyFeedback(models.Model):  # TODO: Fuck this shit
-    id = models.AutoField(primary_key=True)
-    owner = models.ForeignKey(Company, on_delete=models.CASCADE)
-    vacancy = models.ForeignKey(Vacancy, on_delete=models.CASCADE)
-    feedback_type = models.CharField(max_length=30)
-    file = models.BinaryField(null=True)
-    text = models.TextField(null=True)
-    created = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return self.vacancy
+# class VacancyFeedback(models.Model):  # TODO: Fuck this shit
+#     id = models.AutoField(primary_key=True)
+#     owner = models.ForeignKey(Company, on_delete=models.CASCADE)
+#     vacancy = models.ForeignKey(Vacancy, on_delete=models.CASCADE)
+#     feedback_type = models.CharField(max_length=30)
+#     file = models.BinaryField(null=True)
+#     text = models.TextField(null=True)
+#     created = models.DateTimeField(auto_now_add=True)
+#
+#     def __str__(self):
+#         return self.vacancy
 
 
 class MediaFile(models.Model):

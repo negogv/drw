@@ -21,9 +21,11 @@ class EmployeeSerializer(serializers.ModelSerializer):
         fields = ['id',
                   'user',
                   'country',
+                  'state',
                   'city',
                   'phone',
                   'email',
+                  'skills',
                   'text',
                   'media_array',
                   'cv',
@@ -44,16 +46,16 @@ class VacancySerializer(serializers.ModelSerializer):
                   'created']
 
 
-class VacancyFeedbackSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = VacancyFeedback
-        fields = ['id',
-                  'owner',
-                  'vacancy',
-                  'feedback_type',
-                  'file',
-                  'text',
-                  'created']
+# class VacancyFeedbackSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = VacancyFeedback
+#         fields = ['id',
+#                   'owner',
+#                   'vacancy',
+#                   'feedback_type',
+#                   'file',
+#                   'text',
+#                   'created']
 
 
 class MediaFileSerializer(serializers.ModelSerializer):

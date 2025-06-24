@@ -1,20 +1,22 @@
 {% extends 'base.html' %}
 
 {% block title %}
-    DRW
+DRW
 {% endblock %}
 
 {% block content %}
-    <h1 style="text-align: center;">Choose one of your companies</h1>
+<h1 style="text-align: center;">Choose one of your companies</h1>
 
-    <div class="button-container" id="button-container">
-        {% for company in companies %}
-            <button class="item-button"
-                    onclick="window.location.href='{% url redirect_to company.id %}'">
-                {{ company.name }}
-            </button>
-        {% empty %}
-            <p>You have no company profile</p>
-        {% endfor %}
-    </div>
+<div class="d-flex justify-content-center" style="margin-bottom: .5rem;">
+    {% for company in companies %}
+    <a class="btn btn-outline-dark m-1" href="{% url redirect_to company.id %}">
+        {{ company.name }}
+    </a>
+    {% empty %}
+    <h3 class="m-5">You have no company profile</h3>
+    {% endfor %}
+</div>
+<div class="d-flex justify-content-center">
+    <a class="btn btn-success" href="/api/register/c/">Create new company profile</a>
+</div>
 {% endblock %}

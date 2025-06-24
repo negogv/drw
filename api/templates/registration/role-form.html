@@ -6,11 +6,12 @@ DRW
 
 {% block content %}
 <h1>{{ h1 }}</h1>
-<form class="form" action="{{ form_action }}" method="post">
+<form class="form" action="{{ form_action }}" method="post" style="position: relative;">
     {% csrf_token %}
     {{ form }}
     <button class="btn btn-primary" type="submit">Submit</button>
 </form>
 {% load static %}
+<script src="{% static 'js/location.js' %}"></script>
 <script src="{% static 'js/edit-page.js' %}"></script>
 {% endblock %}

@@ -12,23 +12,30 @@ DRW
     <div>
         <div id="company-info">
             <!-- add a logo to eigene column -->
-            <h1 class="row">
-                {{ company.name }}
-            </h1>
-            {% if is_owner == True %}
-                <a class="btn btn-primary" href="/api/company/edit/{{ company.id }}">Edit company profile</a>
-            {% endif %}
+            <div class="d-flex align-items-center">
+                <h1>
+                    {{ company.name }}
+                </h1>
+                {% if is_owner == True %}
+                <a style="margin-left: 20px;" class="btn btn-outline-primary"
+                    href="/api/company/edit/{{ company.id }}">Edit
+                    company profile</a>
+                {% endif %}
+            </div>
             <div class="row d-flex justify-content-between">
-                 <div class="p-2">
-                    {{ company.city }}
-                </div>
-                <div class="p-2">
-                    <div class="p-2">
+                <p>
+                    {{ company.city }},
+                    {{ company.country }}
+                </p>
+                <div>
+                    <p>
+                        Email:
                         {{ company.email }}
-                    </div>
-                    <div class="p-2">
+                    </p>
+                    <p>
+                        Phone number:
                         {{ company.phone }}
-                    </div>
+                    </p>
                 </div>
             </div>
         </div>
@@ -38,18 +45,23 @@ DRW
             </p>
         </div>
         <div id="vacancies of the company">
-            <h4>
-                Vacancies of this company
-            </h4>
-            {% for vacancy in vacancies %}
-                <a class="btn btn-dark" href="/api/vacancy/{{ vacancy.id }}">
+            <h4>Vacancies of this company</h4>
+            <div>
+                {% for vacancy in vacancies %}
+                <a class="btn btn-dark" style="margin: 3px;" href="/api/vacancy/{{ vacancy.id }}">
                     {{ vacancy.title }}
                 </a>
-            {% empty %}
+                {% empty %}
                 <p>
                     This company has no vacancies
                 </p>
-            {% endfor %}
+                {% endfor %}
+            </div>
+            {% if is_owner == True %}
+            <a style="margin-top: 8px;" class="btn btn-success" href="/api/vacancy/new/{{ company.id }}">
+                Create new vacancy
+            </a>
+            {% endif %}
         </div>
     </div>
 

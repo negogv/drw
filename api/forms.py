@@ -35,37 +35,68 @@ class RegistrationForm(BaseUserCreationForm):
 class CompanyRegistrationForm(forms.Form):
     class Meta:
         model = Company
-        fields = ['name', 'country', 'city', 'text', 'media_array']
+        fields = ['name', 'country', 'state', 'city', 'text', 'media_array']
 
-    name = forms.CharField(max_length=300)
-    country = forms.ModelChoiceField(
-        queryset=Country.objects.exclude(id=1),
-        empty_label="Select a country"
+    name = forms.CharField(max_length=300, widget=forms.TextInput(attrs={'class': 'form-control',
+                                                                         'placeholder': 'Name for a company'}))
+    country = forms.CharField(
+        widget=forms.TextInput(attrs={'class': 'form-select',
+                                      'id': 'country-input',
+                                      'autocomplete': 'off',
+                                      'name': 'country',
+                                      'placeholder': 'Select a country'})
     )
-    city = forms.ModelChoiceField(
-        queryset=City.objects.exclude(id=1),  # TODO: make a mechanism to check cities by chosen country
-        empty_label="Select a city"
+
+    state = forms.CharField(
+        widget=forms.TextInput(attrs={'class': 'form-select',
+                                      'id': 'state-input',
+                                      'autocomplete': 'off',
+                                      'name': 'state',
+                                      'placeholder': 'Select a state'})
     )
-    text = forms.CharField(max_length=400, widget=forms.TextInput(attrs={'placeholder': 'Tell us more about you!'}),
+
+    city = forms.CharField(
+        widget=forms.TextInput(attrs={'class': 'form-select',
+                                      'id': 'city-input',
+                                      'autocomplete': 'off',
+                                      'name': 'city',
+                                      'placeholder': 'Select a city'})
+    )
+    text = forms.CharField(max_length=400, widget=forms.Textarea(attrs={'class': 'form-control',
+                                                                        'placeholder':
+                                                                        'Tell us more about your enterprise!'}),
                            required=False)
     # TODO: text = TextField
     media_array = forms.CharField(max_length=80)  # TODO: media mechanism
 
 
-class EmployeeRegistrationForm(forms.Form):
+class EmployeeRegistrationForm(forms.ModelForm):
     class Meta:
         model = Employee
-        fields = ['country', 'city', 'phone', 'email', 'text', 'cv', 'media_array']
+        fields = ['country', 'state', 'city', 'phone', 'email', 'text', 'skills', 'cv', 'media_array']
 
-    country = forms.ModelChoiceField(
-        queryset=Country.objects.exclude(id=1),
-        empty_label="Select a country",
-        widget=forms.Select(attrs={'class': 'form-control'})
+    country = forms.CharField(
+        widget=forms.TextInput(attrs={'class': 'form-select',
+                                      'id': 'country-input',
+                                      'autocomplete': 'off',
+                                      'name': 'country',
+                                      'placeholder': 'Select a country'})
     )
-    city = forms.ModelChoiceField(
-        queryset=City.objects.exclude(id=1),
-        empty_label="Select a city",
-        widget=forms.Select(attrs={'class': 'form-control'})
+
+    state = forms.CharField(
+        widget=forms.TextInput(attrs={'class': 'form-select',
+                                      'id': 'state-input',
+                                      'autocomplete': 'off',
+                                      'name': 'state',
+                                      'placeholder': 'Select a state'})
+    )
+
+    city = forms.CharField(
+        widget=forms.TextInput(attrs={'class': 'form-select',
+                                      'id': 'city-input',
+                                      'autocomplete': 'off',
+                                      'name': 'city',
+                                      'placeholder': 'Select a city'})
     )
     phone = forms.CharField(
         max_length=20,
@@ -82,79 +113,99 @@ class EmployeeRegistrationForm(forms.Form):
                              label='Contact email',
                              widget=forms.TextInput(attrs={'placeholder': 'your.email@example.com',
                                                            'class': 'form-control'}))
-    text = forms.CharField(max_length=400,
-                           widget=forms.TextInput(attrs={'placeholder': 'Tell us more about you!',
-                                                         'class': 'form-control'}),
+    text = forms.CharField(widget=forms.Textarea(attrs={'placeholder': 'Tell us more about you!',
+                                                        'class': 'form-control',
+                                                        'rows': '5'}),
                            required=False)
+    skills = forms.CharField()
     media_array = forms.CharField(max_length=80)
     cv = forms.FileField(allow_empty_file=True,
                          required=False,
                          widget=forms.FileInput(attrs={'class': 'form-control-file',
                                                        'style': "margin-bottom: .5rem;"}))
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
 
 class LoginForm(forms.Form):
     class Meta:
         model = TheUser
         fields = ['username', 'password']
-    username = forms.CharField(widget=forms.TextInput(attrs={"autofocus": True}))
+    username = forms.CharField(widget=forms.TextInput(attrs={"autofocus": True,
+                                                             'class': 'form-control'}))
     password = forms.CharField(
         label=_("Password"),
         strip=False,
-        widget=forms.PasswordInput(attrs={"autocomplete": "current-password"}),
+        widget=forms.PasswordInput(attrs={"autocomplete": "current-password",
+                                          'class': 'form-control'})
     )
 
 
 class NewVacancyForm(forms.ModelForm):
     class Meta:
         model = Vacancy
-        fields = ['title', 'text', 'salary', 'currency', 'salary_type', 'media_array', 'tags']
+        fields = ['title', 'text', 'country', 'city', 'salary', 'currency', 'salary_type', 'media_array', 'tags']
     title = forms.CharField(max_length=200,
-                            widget=forms.TextInput(attrs={'placeholder': 'Name of the vacancy'}),
+                            widget=forms.TextInput(attrs={'placeholder': 'Name of the vacancy',
+                                                          'class': 'form-control'}),
                             required=True)
-    text = forms.Textarea(attrs={'placeholder': 'More about the vacancy'})
-    # text = forms.CharField(max_length=5000,
-    #                        widget=forms.TextInput(attrs={'placeholder': 'More about the vacancy'}),
-    #                        required=True)
-    salary = forms.IntegerField(widget=forms.TextInput(attrs={'placeholder': 'Name of the vacancy'}),
+    text = forms.CharField(widget=forms.Textarea(attrs={"rows": "5",
+                                                        'placeholder': 'More about the vacancy',
+                                                        'class': 'form-control'}))
+    country = forms.CharField(
+        widget=forms.TextInput(attrs={'class': 'form-select',
+                                      'id': 'country-input',
+                                      'autocomplete': 'off',
+                                      'name': 'country',
+                                      'placeholder': 'Select a country'})
+    )
+
+    state = forms.CharField(
+        widget=forms.TextInput(attrs={'class': 'form-select',
+                                      'id': 'state-input',
+                                      'autocomplete': 'off',
+                                      'name': 'state',
+                                      'placeholder': 'Select a state'})
+    )
+
+    city = forms.CharField(
+        widget=forms.TextInput(attrs={'class': 'form-select',
+                                      'id': 'city-input',
+                                      'autocomplete': 'off',
+                                      'name': 'city',
+                                      'placeholder': 'Select a city'})
+    )
+    salary = forms.IntegerField(widget=forms.TextInput(attrs={'placeholder': 'Name of the vacancy',
+                                                              'class': 'form-control'}),
                                 required=True)
     currency = forms.ModelChoiceField(queryset=Currency.objects.exclude(id=1),
-                                      empty_label="Select a currency")
-    salary_type = forms.ChoiceField(choices=Vacancy.SalaryTypeChoices.choices)
-    media_array = forms.CharField()
-    # tag_search = forms.CharField(
-    #     label='Search for tags',
-    #     required=False,
-    #     widget=forms.TextInput(attrs={
-    #         'placeholder': 'Search tags...',
-    #         'hx-get': '/search_tags/',
-    #         'hx-target': '#search-results',
-    #         'hx-trigger': 'keyup changed delay:500ms',
-    #         'hx-swap': 'innerHTML'}))
-    # tags = forms.ModelMultipleChoiceField(
-    #     queryset=VacancyTag.objects.none(),
-    #     widget=forms.CheckboxSelectMultiple,
-    #     required=False)
-    tag_search = forms.CharField(
-        label='Search for tags',
-        required=False,
-        widget=forms.TextInput(attrs={
-            'placeholder': 'Search tags...',
-            'hx-get': '/api/search_tags/',
-            'hx-target': '#search-results',
-            'hx-trigger': 'keyup changed delay:500ms',
-            'hx-swap': 'innerHTML'
-        })
-    )
-    tags = forms.ModelMultipleChoiceField(
-        queryset=VacancyTag.objects.none(),
-        widget=forms.CheckboxSelectMultiple,
-        required=False
-    )
+                                      empty_label="Select a currency",
+                                      to_field_name='code',
+                                      widget=forms.Select(attrs={'class': 'form-select',
+                                                                 'placeholder': 'Select a currency'}))
+    salary_type_choices = (('year', 'Year'),
+                           ('month', 'Month'),
+                           ('hour', 'Hour'))
+    salary_type = forms.ChoiceField(choices=salary_type_choices,
+                                    widget=forms.Select(attrs={'class': 'form-select'}))
+    media_array = forms.CharField()  # TODO
+    # tags = forms.ModelMultipleChoiceField(  # TODO: search and select like country
+    #     queryset=Skill.objects.all(),
+    #     widget=forms.TextInput(),
+    #     required=False
+    # )
+    tags = forms.CharField()
+
+    # def clean_tags(self):
+    #     tag_ids = [int(id) for id in self.data['tags'].split('-')]
+    #     skills = Skill.objects.filter(id__in=tag_ids)
+    #     return tag_ids
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        if 'tags' in self.data:
-            tag_ids = [int(id) for id in self.data.getlist('tags')]
-            self.fields['tags'].queryset = VacancyTag.objects.filter(id__in=tag_ids)
+        # if 'tags' in self.data:
+        #     data = self.data
+        #     tag_ids = [int(id) for id in self.data['tags'].split('-')]
+        #     self.fields['tags'].queryset = Skill.objects.filter(id__in=tag_ids)
 

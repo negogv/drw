@@ -15,14 +15,19 @@ DRW
             <h1 class="row">
                 {{ employee.user.first_name }} {{ employee.user.last_name }}
             </h1>
-            {% if is_owner == True %}
-                <a class="btn btn-primary" href="/api/employee/edit/{{ employee.id }}">Edit profile</a>
-            {% endif %}
+            <div class="d-flex">
+                {% if is_owner == True %}
+                <a class="btn btn-outline-primary flex-fill" href="/api/employee/edit/{{ employee.id }}">Edit
+                    profile</a>
+                {% endif %}
+            </div>
             <div class="row d-flex justify-content-between">
                 <div class="p-2">
-                    {{ employee.city }}
+                    <h4>Location: </h4>
+                    {{ employee.city }}, {{ employee.country }}
                 </div>
-                <div class="p-2">
+                <div class="p-2 card">
+                    <h4>Contact details:</h4>
                     <div>
                         {{ employee.email }}
                     </div>
@@ -33,6 +38,7 @@ DRW
             </div>
         </div>
         <div id="employee-description">
+            <h4>Description: </h4>
             <p>
                 {{ employee.text|linebreaks }}
             </p>
@@ -40,10 +46,10 @@ DRW
         <div id="cv of the employee">
             <!-- tbh idk how cv will work -->
             {% if employee.cv %}
-                <h4>
-                    {{ employee.first_name }}'s CV
-                </h4>
-                {{ employee.cv }}
+            <h4>
+                {{ employee.first_name }}'s CV
+            </h4>
+            {{ employee.cv }}
             {% endif %}
         </div>
     </div>

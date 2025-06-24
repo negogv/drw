@@ -1,32 +1,9 @@
-// function testFunc() {
-//     const request = new XMLHttpRequest();
-//     try {
-//         request.open("POST", "/api/test2/");
-
-//         request.responseType = "json";
-
-//         request.addEventListener("load", () => console.log(request.response));
-//         request.addEventListener("error", () => console.error("XHR error"));
-
-//         request.send();
-//     } catch (error) {
-//         console.error(`XHR error ${request.status}`);
-//     }
-//     console.log("Func is ended");
-// }
-function testFunc() {
-    const csrftoken = document.querySelector(
-        "[name=csrfmiddlewaretoken]"
-    ).value;
-    const data = { givethelink: "please" };
-    const fetchPromise = fetch("/api/test2/", {
-        method: "POST",
-        body: JSON.stringify(data),
+document.addEventListener("DOMContentLoaded", async function () {
+    await fetch(`/api/endponit/`, {
+        method: "GET",
         headers: {
-            "X-CSRFToken": csrftoken,
-            "Content-Type": "application/json",
+            "X-CSRFToken": csrfToken,
         },
-        keepalive: true,
     })
         .then((response) => {
             if (!response.ok) {
@@ -37,10 +14,14 @@ function testFunc() {
             return response.json();
         })
         .then((data) => {
-            if (data.redirectTo) {
-                window.location.href = data.redirectTo;
-            } else {
-                console.log(data);
-            }
+            document.getElementById("id-of-one-some-p-tag").innerText =
+                "The request was completed";
+        })
+        .catch((error) => {
+            console.error("Fetch completely failed:", error);
         });
-}
+    document.getElementById("id-of-one-some-p-tag").innerText =
+        "The request wasn't completed";
+});
+document.getElementById("id-of-one-another-p-tag").innerText =
+    "Some text, idk, just for example";

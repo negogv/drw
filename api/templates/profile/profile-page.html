@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+
+{% block title %}
+DRW
+{% endblock %}
+
+{% block content %}
+
+{% csrf_token %}
+
+<div id="alert-div">
+    <!-- blank for js -->
+</div>
+<div class="row row-cols-2">
+    <div id="profile" class="col">
+        <h1>Name</h1>
+        <span id="user-id" style="display: none;" hidden>{{ user_id }}</span>
+        <div class="d-flex justify-content-between align-items-center border rounded p-3">
+            <div id="names">
+                <h2 id="full-name"></h2>
+                <p id="username"></p>
+            </div>
+
+            <button id="first_name-last_name-username" class="btn btn-outline-secondary" onclick="editNames(this)">
+                Edit
+            </button>
+        </div>
+        <h1>Contact info</h1>
+        <div class="d-flex justify-content-between align-items-center border rounded p-3">
+            <div id="contact-details">
+                <p id="email"></p>
+                <p id="phone"></p>
+            </div>
+            <button id="email-phone" class="btn btn-outline-secondary" onclick="editContact(this)">
+                Edit
+            </button>
+        </div>
+        <h1>Role</h1>
+        <div id="role-div" class="d-flex justify-content-between align-items-center">
+            <h4 id="role-name" class="p-1"></h4>
+            <a id="role-page-link" class="btn btn-outline-secondary" style="margin-left: 2rem;" href="">
+                Show role profile
+            </a>
+        </div>
+        <div id="companies" style="display: none;">
+            <h1>Your companies</h1>
+            <div id="company-cards" class="d-flex flex-wrap align-items-center">
+                <!-- <a class="btn btn-outline-dark m-1" href="#">Shit Working</a> -->
+
+            </div>
+        </div>
+    </div>
+    <div id="vacancies-div" class="col">
+        <h1 id="vacancy-h">Vacancies</h1>
+        <!-- Either applied vacancies for an employee or manage vacancies for company -->
+    </div>
+</div>
+
+{% load static %}
+<script src="{% static 'js/profile-page.js' %}"></script>
+{% endblock %}

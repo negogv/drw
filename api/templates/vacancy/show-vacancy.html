@@ -7,45 +7,59 @@ DRW
 {% block content %}
 
 <div class="container">
-    <h1 style="text-align: center;">{{ vacancy.title }}</h1>
+    <h1 style="text-align: center;"></h1>
     <div>
-        {% if is_owner == True %}
-            <a class="btn btn-primary" href="/api/vacancy/edit/{{ vacancy.id }}">Edit vacancy</a>
-        {% endif %}
+        <div class="d-flex justify-content-center">
+            {% csrf_token %}
+            {% if is_owner == True %}
+            <a style="margin-bottom: 50px; margin-top: 42px;" class="btn btn-outline-primary flex-fill" href="#"
+                id="editBtn">Edit vacancy</a>
+            {% endif %}
+        </div>
+
         <div class="row" id="company-salary-info">
             <div class="col">
                 <!-- add a logo -->
-                <a href="/api/company/{{ vacancy.owner.id }}">
-                    {{ vacancy.owner.name }}
-                </a>
-                <div>
-                    {{ vacancy.owner.email }}
-                </div>
-                <div>
-                    {{ vacancy.owner.phone }}
-                </div>
+                <h2>
+                    <a class="link-offset-1 link-dark link-opacity-75-hover link-underline-opacity-75-hover" href="#"
+                        id="owner">
+                    </a>
+                </h2>
+                <p id="owner-email">
+                </p>
+                <p id="owner-phone">
+                </p>
             </div>
-            <h6 class="col">
-                {{ vacancy.salary }} {{ vacancy.currency.code }}
-                in {{ vacancy.salary_type}}
-            </h6>
+            <div class="col">
+                <h2>Salary</h2>
+                <p id="salary">
+                </p>
+            </div>
+        </div>
+        <div class="row" id="location-info">
+            <div class="col">
+                <h2>Location</h2>
+                <p id="location"></p>
+            </div>
         </div>
         <div id="vacancy-info">
-            <p>
-                {{ vacancy.text|linebreaks }}
+            <h2>Description</h2>
+            <p id="text">
             </p>
-            {% for tag in vacancy.tags.all %}
-                <a class="button" href="/api/vacancy/search/?tag={{ tag|slugify }}">
-                    {{ tag.name }}
-                </a>
-            {% empty %}
-            {% endfor %}
-            <p>
-                {{ vacancy.created }}
-            </p>
-            <!-- for loop for media files -->
+            <h2>Tags:</h2>
+            <div id="tags">
+            </div>
+            <!-- media files -->
         </div>
     </div>
-
+    {% if user.role == "employee" %}
+    <div class="d-flex mt-3" id="applyDiv">
+        <button class="btn btn-success flex-fill" onclick="applyForVac(this)" id="{{ user.id }}">Apply for a
+            vacancy</button>
+    </div>
+    {% endif %}
 </div>
+
+{% load static %}
+<script src="{% static 'js/show-vacancy.js' %}"></script>
 {% endblock %}

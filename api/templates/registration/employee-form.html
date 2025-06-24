@@ -1,13 +1,18 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<h1>Create New Vacancy</h1>
-<form method="post" id="vacancy-form">
+<h1>{{ h1 }}</h1>
+<form action="{{ form_action }}" method="post" style="position: relative;">
     {% csrf_token %}
 
     <div>
-        {{ form.title.label_tag }}
-        {{ form.title }}
+        {{ form.email.label_tag }}
+        {{ form.email }}
+    </div>
+
+    <div>
+        {{ form.phone.label_tag }}
+        {{ form.phone }}
     </div>
 
     <div>
@@ -45,33 +50,23 @@
     </div>
 
     <div>
-        {{ form.salary.label_tag }}
-        {{ form.salary }}
-    </div>
-
-    <div>
-        {{ form.currency.label_tag }}
-        {{ form.currency }}
-    </div>
-
-    <div>
-        {{ form.salary_type.label_tag }}
-        {{ form.salary_type }}
-    </div>
-
-    <div>
         {{ form.media_array.label_tag }}
         {{ form.media_array }}
     </div>
 
-    <div id="tagsInputDiv" hidden>
-        {{ form.tags }}
+    <div id="skillsInputDiv" hidden>
+        {{ form.skills }}
     </div>
 
     <button type="submit" class="btn btn-primary">Apply</button>
 </form>
 
+{% if manyToManyFields %}
+{{ manyToManyFields|json_script:"manyToManyFields" }}
+{% endif %}
+
 {% load static %}
 <script src="{% static 'js/search-skills.js' %}"></script>
+<script src="{% static 'js/edit-page.js' %}"></script>
 <script src="{% static 'js/location.js' %}"></script>
 {% endblock %}

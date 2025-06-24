@@ -1,38 +1,55 @@
-<nav class="navbar navbar-expand-lg navbar-light bg-light">
-    <a class="navbar-brand" href="{% url 'home' %}">DRW</a>
+<nav class="navbar navbar-expand-lg navbar-light bg-light d-flex mb-2 container-sm">
+    <div class="me-auto p-2 bd-highlight">
+        <a class="navbar-brand me-auto bd-highlight" href="{% url 'home' %}">DRW</a>
+    </div>
 
-    <div id="navbarNav">
-        <ul class="navbar-nav ml-auto">
+    <div id="navbarNav" style="width: 100%;">
+        <ul class="navbar-nav d-flex justify-content-between">
             {% if user.is_authenticated %}
-                {% if user.role == 'employee' %}
-                    <li class="nav-item">
-                        <a class="nav-link" href="/api/vacancies/">Vacancies</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/api/profile/">My profile</a>
-                    </li>
-                {% elif user.role == 'company' %}
-                    <div>
-                        <li class="nav-item">
-                            <a class="nav-link" href="/api/vacancies/">Vacancies</a>
-                        </li>
-                    </div>
-                    <div>
-                        <li class="nav-item">
-                            <a class="nav-link" href="/api/company/profile/">My companies</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="/api/profile/">My profile</a>
-                        </li>
-                    </div>
-                {% endif %}
+            {% if user.role == 'employee' %}
+            <div class="d-flex flex-row align-items-center">
+                <li class="nav-item">
+                    <a class="nav-link" href="/api/profile/">My profile</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/api/employee/me/">My employee profile</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/api/vacancies/">Search vacancies</a>
+                </li>
+            </div>
+            <div>
+                <li class="p-3">
+                    <a class="btn btn-outline-secondary" href="/api/logout/">Log out</a>
+                </li>
+            </div>
+            {% elif user.role == 'company' %}
+            <div class="d-flex flex-row align-items-center">
+                <li class="nav-item">
+                    <a class="nav-link" href="/api/profile/">Personal info</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/api/company/me/">My companies</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/api/employees/">Search for Employees</a>
+                </li>
+            </div>
+            <div>
+                <li class="p-3">
+                    <a class="btn btn-outline-secondary" href="/api/logout/">Log out</a>
+                </li>
+            </div>
+            {% endif %}
             {% else %}
+            <div class="d-flex flex-row align-items-center">
                 <li class="nav-item">
                     <a class="nav-link" href="/api/register/">Register</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="/api/login/">Log in</a>
                 </li>
+            </div>
             {% endif %}
 
         </ul>
