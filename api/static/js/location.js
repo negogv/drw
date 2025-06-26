@@ -19,20 +19,22 @@ const locEvent = new CustomEvent("locChange", {
 
 [countryInput, stateInput, cityInput].forEach((element) => {
     const ul = document.createElement("ul");
-    ul.className = "list-group";
+    ul.className = "list-group border border-secondary border-2";
     ul.id = `${element.name}-list`;
     ul.style =
-        "position: absolute; max-height: 100%; overflow-y: auto; display: none; width: 100%;";
+        "position: absolute; max-height: 500%; overflow-y: auto; display: none; width: 100%;";
     element.parentElement.appendChild(ul);
 
     const listElement = element.parentElement.children[2];
     var ilName = `.${element.name}`;
     element.addEventListener("focus", () => {
+        listElement.parentElement.style.position = "relative";
         listElement.style.removeProperty("display");
     });
 
     element.addEventListener("blur", () => {
         setTimeout(() => {
+            listElement.parentElement.style.removeProperty("position");
             listElement.style.display = "none";
         }, 300);
     });
@@ -70,10 +72,14 @@ function loadCountryList() {
         })
         .catch((error) => console.error("Error loading countries:", error));
 
-    stateInput.disabled = true;
-    cityInput.disabled = true;
-    stateInput.style.pointerEvents = "none";
-    cityInput.style.pointerEvents = "none";
+    if (stateInput.value.length == 0) {
+        stateInput.disabled = true;
+        stateInput.style.pointerEvents = "none";
+    }
+    if (cityInput.value.length == 0) {
+        cityInput.disabled = true;
+        cityInput.style.pointerEvents = "none";
+    }
 }
 
 function selectCountry(element) {

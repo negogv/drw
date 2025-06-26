@@ -5,13 +5,121 @@ DRW
 {% endblock %}
 
 {% block content %}
-<h1>{{ h1 }}</h1>
+<h1 class="mb-2">{{ h1 }}</h1>
 <form class="form" action="{{ form_action }}" method="post" style="position: relative;">
     {% csrf_token %}
-    {{ form }}
-    <button class="btn btn-primary" type="submit">Submit</button>
+
+    <div class="my-1 d-flex flex-row align-items-center">
+        <div class="me-2 flex-column align-items-center border border-2 p-2 rounded-3" style="display: none;">
+            <p class="fs-5">Current picture:</p>
+            <img src="" class="rounded-circle" alt="error" id="profilePic" style="height: 80px; width: 80px;">
+        </div>
+        <div class="flex-fill">
+            <label class="fs-5" for="mediaInput">Profile picture</label>
+            <input type="file" id="mediaInput" class="form-control" accept="image/*">
+        </div>
+    </div>
+
+    <div class="my-1">
+        <div class="fs-5">
+            {{ form.email.label_tag }}
+        </div>
+        {{ form.email }}
+    </div>
+
+    <div class="my-1">
+        <div class="fs-5">
+            {{ form.phone.label_tag }}
+        </div>
+        {{ form.phone }}
+    </div>
+
+    <div class="my-1">
+        <div class="fs-5">
+            {{ form.country.label_tag }}
+        </div>
+        {{ form.country }}
+    </div>
+
+    <div class="my-1">
+        <div class="fs-5">
+            {{ form.state.label_tag }}
+        </div>
+        {{ form.state }}
+    </div>
+
+    <div class="my-1">
+        <div class="fs-5">
+            {{ form.city.label_tag }}
+        </div>
+        {{ form.city }}
+    </div>
+
+    {% if form.skills %}
+    <div class="my-1">
+        <label class="fs-5" for="skill-input">Skills:</label>
+        <div class="border border-dark-subtle border-1 d-flex p-2 rounded-4 mb-2" id="selected-skills">
+            <span class="text-muted">Nothing is selected</span>
+            <!-- <button class="btn btn-outline-secondary rounded-pill">Python</button> -->
+        </div>
+        <input type="text" class="form-select" id="skill-input" autocomplete="off" name="skill"
+            placeholder="Select required or recomendated skills">
+        <ul class="list-group border border-secondary" id="skills-list"
+            style="position: absolute; max-height: 100%; overflow-y: auto; display: none; width: 100%;">
+            <!--  -->
+        </ul>
+    </div>
+    {% endif %}
+
+    <div class="my-1">
+        <div class="fs-5">
+            {{ form.text.label_tag }}
+        </div>
+        {{ form.text }}
+    </div>
+
+    <div hidden>
+        {% if form.skills %}
+        {{ form.skills }}
+        {% endif %}
+    </div>
+    <div hidden>
+        {{ form.media }}
+    </div>
+    <button class="btn btn-primary mt-4 w-100" type="submit">Submit</button>
 </form>
+
+<span id="modelId" hidden>{{ model_id }}</span>
+<span id="modelName" hidden>{{ model_name }}</span>
+
+{% if manyToManyFields %}
+{{ manyToManyFields|json_script:"manyToManyFields" }}
+{% endif %}
+
 {% load static %}
-<script src="{% static 'js/location.js' %}"></script>
+<script>
+    const csrfToken = document.querySelector("[name=csrfmiddlewaretoken]").value;
+</script>
+{% if form.skills %}
+<script src="{% static 'js/search-skills.js' %}"></script>
+{% endif %}
+<script src="{% static 'js/retrieve-media.js' %}"></script>
 <script src="{% static 'js/edit-page.js' %}"></script>
+<script src="{% static 'js/location.js' %}"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", async function () {
+        const modelId = document.getElementById('modelId').textContent;
+        const modelName = document.getElementById('modelName').textContent;
+
+        const [mediaArray, mediaUrls] = await getMediaUrlList(modelName, modelId);
+        if (mediaArray && mediaUrls) {
+            mediaIdInput.value = mediaArray[0];
+
+            let profilePic = document.getElementById('profilePic');
+            profilePic.parentElement.style.display = "flex";
+            profilePic.src = mediaUrls[0];
+        }
+    });
+</script>
+<script src="{% static 'js/upload-media.js' %}"></script>
 {% endblock %}

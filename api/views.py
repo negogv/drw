@@ -1,33 +1,39 @@
+import base64
 import requests
 from django.urls import reverse
 from django.shortcuts import render, redirect, get_object_or_404
 import mysql.connector
 from django.http import HttpResponse, JsonResponse
-from django.core.files.uploadedfile import TemporaryUploadedFile
 from django.views.generic import TemplateView
 from django.views.decorators.http import require_GET, require_POST
+from django.views.decorators.csrf import csrf_exempt
 from django.db import transaction
 from django.db.models import ManyToManyRel, ManyToManyField
+from django.core.files.base import ContentFile
+from django.core.files.uploadedfile import TemporaryUploadedFile
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from django.forms.models import model_to_dict
 from django.contrib import messages
+from requests_toolbelt.multipart.encoder import MultipartEncoder
+from django.core.management.base import BaseCommand
 from django.utils.safestring import mark_safe
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.request import Request
 from rest_framework.decorators import api_view, renderer_classes
-from rest_framework.renderers import JSONRenderer, TemplateHTMLRenderer
+from rest_framework.renderers import BaseRenderer
 from rest_framework import generics, viewsets, status
 # from .models import *
 from . import serializers
 import api.models
 from .serializers import *
-from rest_framework.parsers import MultiPartParser, FormParser
+from rest_framework.parsers import MultiPartParser, FormParser, JSONParser, FileUploadParser
 import os.path as path
 from .forms import RegistrationForm, LoginForm, EmployeeRegistrationForm, CompanyRegistrationForm, NewVacancyForm
 import json
+import struct
 # Create your views here.
 
 from django.contrib.auth.forms import UserCreationForm
@@ -147,61 +153,84 @@ class RetrieveMediaArray(APIView):
         return Response(media_array, status=status.HTTP_200_OK)
 
 
-class MediaFileCreate(APIView):
-    parser_classes = (MultiPartParser, FormParser)  # FIXME do i really need this line?
+class MultipartRenderer(BaseRenderer):
+    media_type = 'multipart/form-data'
+    format = 'multipart'
+
+    def render(self, data, media_type=None, renderer_context=None):
+        multipart_data = MultipartEncoder(fields=data)
+        return multipart_data.to_string()
+
+
+class GetMediaFileElement(APIView):
+    renderer_classes = [MultipartRenderer]
+
+    def get(self, request, **kwargs):
+        try:
+            media = MediaFile.objects.get(id=kwargs['media_id'])
+            return Response({'mediaName': media.name,
+                             'mediaBlob': media.binary},
+                            content_type='multipart/form-data',
+                            status=status.HTTP_200_OK)
+        except MediaFile.DoesNotExist:
+            return JsonResponse({'error': 'Not Found',
+                                 'message': "MediaFile object isn't found"}, status=404)
+
+
+class GetMediaArrayFromInst(APIView):
+
+    def post(self, request, **kwargs):
+        model_name = request.data.get('modelName').capitalize()
+        model_id = request.data.get('modelId')
+        instance = getattr(api.models, model_name).objects.get(id=model_id)
+        all_media = list(instance.media.all())
+        body = []
+        for media in all_media:
+            body.append(media.id)
+        return JsonResponse(body, safe=False, status=200)
+
+
+class CreateOneMediaFile(APIView):
+    parser_classes = (MultiPartParser, FormParser, JSONParser, FileUploadParser)
 
     @staticmethod
-    def create_mediafile(file: TemporaryUploadedFile) -> int:
+    def create_mediafile(file) -> MediaFile:
         """
         Takes an image in format TemporaryUploadedFile, saves in api_mediafile table and returns new-created primary key
         """
         with transaction.atomic():
             binary_data = b''.join(chunk for chunk in file.chunks())
-            media_file = MediaFile.objects.create(
-                media=binary_data,
-                media_name=file.name
-            )
 
-        return media_file.id
+            media_file = MediaFile.objects.create(
+                binary=binary_data,
+                name=file.name
+            )
+        return media_file
 
     def post(self, request, **kwargs):
-        # TODO: nehm die ganze Funktion ins try-loop um instance.media_array error zu vermeiden, wenn modell hat kein media_array Feld
-        file_obj: TemporaryUploadedFile = request.data.get('file')
-        if file_obj:
-            model_name = kwargs['model'].capitalize()  # To which class should we attach new mediafile
-            instance = getattr(api.models, model_name).objects.get(id=kwargs['pk'])
-
-            media_id = self.create_mediafile(file_obj)
-
-            media_array = instance.media_array
-
-            if media_array:
-                model_serializer_data = {'media_array': media_array + f", {str(media_id)}"}
-            else:
-                model_serializer_data = {'media_array': str(media_id)}
-
-            serializer = getattr(api.serializers, model_name + 'Serializer')(instance,
-                                                                             data=model_serializer_data,
-                                                                             partial=True)
-
-            serializer.is_valid(raise_exception=True)
-            serializer.save()
-
-            return Response(serializer.data,
-                            status=status.HTTP_201_CREATED)
-        else:
-            return Response({'message': 'No file provided'}, status=status.HTTP_400_BAD_REQUEST)
-
-    def get(self, request, **kwargs):
         """
-        returns an array of media files ids of certain model
+        rewrite to update endpoint (idk do i even need this at all, I doubt that that's rational. Wouldn't it better
+        from optimisation point of view to just delete old and create new element?)(like, yeah, it will change image to
+        all instances, but how would one media element be linked to different elements?)
+
+        request body must have a file and name of the model where the media belongs and model id
         """
-        model_name = kwargs['model'].capitalize()  # To which class should we attach new mediafile
-        instance = getattr(api.models, model_name).objects.get(id=kwargs['pk'])
+        file_obj = request.data.get('file')
+        if not file_obj:
+            return JsonResponse({'error': 'File not provided',
+                                 'message': 'Please upload a file'}, status=400)
+        model_name = kwargs['model_name'].capitalize()
+        model_id = kwargs['model_id']
+        instance = getattr(api.models, model_name).objects.filter(id=model_id).first()
+        if instance is None:
+            return JsonResponse({'error': 'Not Found',
+                                 'message': "Instance object isn't found"}, status=404)
 
-        media_array = instance.media_array.split(', ')
+        media_id = self.create_mediafile(file_obj)
+        instance.media.set([media_id])
+        instance.save()
 
-        return Response(media_array, status=status.HTTP_200_OK)
+        return JsonResponse({'mediaId': media_id.id}, status=200)
 
 
 class MediaFileRetrieve(APIView):
@@ -212,12 +241,11 @@ class MediaFileRetrieve(APIView):
         """
         instance = MediaFile.objects.get(id=kwargs['pk'])
 
-        image_type = instance.media_name.split('.')[-1]
+        image_type = instance.name.split('.')[-1]
 
-        response = HttpResponse(instance.media, content_type=f'image/{image_type}', status=status.HTTP_200_OK)
-        # response['Content-Disvacancy'] = f'attachment; filename="{instance.media_name}"'
+        response = HttpResponse(instance.binary, content_type=f'image/{image_type}', status=status.HTTP_200_OK)
+        response['Content-Disvacancy'] = f'attachment; filename="{instance.name}"'
         # response['Content-Disvacancy'] = 'inline'
-
         return response
 
 
@@ -252,6 +280,22 @@ def apply_for_vac_endpoint(request, **kwargs):
         return HttpResponse({}, status=status.HTTP_404_NOT_FOUND)
 
 
+@require_POST
+def decline_application_endpoint(request, **kwargs):
+    try:
+        data = json.loads(request.body.decode('utf-8'))
+        employee = Employee.objects.get(id=data['respondentId'])
+        vacancy = Vacancy.objects.get(id=kwargs['vacancy_id'])
+        vacancy.respondents.remove(employee)
+        return JsonResponse({}, status=204)
+    except Vacancy.DoesNotExist or Employee.DoesNotExist:
+        return JsonResponse({'error': 'Not Found',
+                             'message': "One or both of the models wasn't found"}, status=404)
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'Bad Request',
+                             'message': 'Data in request body is invalid'}, status=400)
+
+
 @require_GET
 def get_user_data_endpoint(request, **kwargs):
     try:
@@ -281,17 +325,22 @@ def get_vacancy_endpoint(request, **kwargs):
         vacancy = Vacancy.objects.get(id=kwargs['vacancy_id'])
         tags = []
         for tag in vacancy.tags.all():
-            tags.append(tag.name)
+            tags.append({'id': tag.id,
+                         'name': tag.name})
 
         respondents = []
         for resp in vacancy.respondents.all():
-            respondents.append({'respId': resp.id,
-                                'respName': resp.user.first_name + " " + resp.user.last_name,
-                                'respLocation': resp.city + ", " + resp.country,
-                                'respEmail': resp.email,
-                                'respPhone': resp.phone,
-                                # 'respSkills': resp.skills, todo won't work at start, cuz its many to many
-                                'respUserId': resp.user.id})
+            skills = []
+            for skill in resp.skills.all():
+                skills.append({'id': skill.id,
+                               'name': skill.name})
+            respondents.append({'id': resp.id,
+                                'name': resp.user.first_name + " " + resp.user.last_name,
+                                'location': resp.city + ", " + resp.country,
+                                'email': resp.email,
+                                'phone': resp.phone,
+                                'skills': skills,
+                                'userId': resp.user.id})
 
         body = model_to_dict(vacancy)
         body['location'] = vacancy.city + ", " + vacancy.country
@@ -398,11 +447,6 @@ def get_skills_endpoint(request, **kwargs):
     return JsonResponse(body, safe=False)
 
 
-def role_choice_view(request):  # replace with JS
-    if request.method == 'GET':
-        return render(request, 'registration/role-choice.html')
-
-
 def login_user(request, password=None):
     if request.user.is_authenticated:
         return
@@ -477,7 +521,7 @@ def register_company_view(request):
         form = CompanyRegistrationForm(initial={'name': request.user.first_name + ' ' + request.user.last_name})
     return render(request, 'registration/role-form.html', {'form': form,
                                                            'h1': 'New company',
-                                                           'form_action': '/api/register/c/'})
+                                                           'form_action': '/api/company/register/'})
 
 
 @login_required
@@ -501,6 +545,9 @@ def register_employee_view(request):
             skills_list = [int(id) for id in form.cleaned_data['skills'].split('-')]
             skills = Skill.objects.filter(id__in=skills_list)
             employee.skills.set(skills)
+            media_id = int(form.cleaned_data['media'])
+            media_instance = MediaFile.objects.filter(id=media_id).first()
+            employee.media.add(media_instance)
             return redirect('/api/employee/me/')
         else:
             messages.error(request, form.errors)
@@ -508,7 +555,7 @@ def register_employee_view(request):
         form = EmployeeRegistrationForm(initial={'phone': request.user.phone, 'email': request.user.email})
     return render(request, 'registration/employee-form.html', {'form': form,
                                                                'h1': 'New employee',
-                                                               'form_action': '/api/register/e/'})
+                                                               'form_action': '/api/employee/register/'})
 
 
 def login_view(request):
@@ -551,7 +598,7 @@ def company_choice_view(request, redirect_to: str):
     if not Company.objects.filter(user=request.user.id).first():
         messages.error(request,
                        mark_safe("You don't own a company. "
-                                 "If you want to create a company use <a href='/api/register/c/'>this link</a>"))
+                                 "If you want to create a company use <a href='/api/company/register/'>this link</a>"))
         return redirect('home')
     companies = Company.objects.filter(user=request.user.id)
     context = {'companies': companies,
@@ -629,12 +676,16 @@ def vacancy_edit_view(request, **kwargs):
     if vacancy.owner.user != request.user:
         messages.error(request, 'You can not edit this vacancy')
         return redirect('home')
+    manyToManyFields = dict()
     if request.method == 'POST':
         form = NewVacancyForm(request.POST)
         if form.is_valid():
-            vacancy.tags.set(form.cleaned_data.pop('tags'))
+            tags = form.cleaned_data.pop('tags').split('-')
+            vacancy.tags.set(tags)
             Vacancy.objects.update_or_create(id=vacancy.id, defaults=form.cleaned_data)
             return redirect('home')
+        else:
+            messages.error(request, form.errors)
     else:
         initial = dict()
         manyToManyFields = dict()
@@ -645,6 +696,9 @@ def vacancy_edit_view(request, **kwargs):
                     field_values.append({'name': el.name,
                                          'id': el.id})
                 manyToManyFields.update({field.name: field_values})
+            elif field.attname == 'currency_id':
+                currency = Currency.objects.get(id=vacancy.serializable_value(field.name))
+                initial.update({field.name: currency.code})
             else:
                 initial.update({field.name: vacancy.serializable_value(field.name)})
         form = NewVacancyForm(initial=initial)
@@ -698,6 +752,8 @@ def company_edit_view(request, **kwargs):
                 initial.update({field.name: company.serializable_value(field.name)})
         form = CompanyRegistrationForm(initial=initial)
     return render(request, 'registration/role-form.html', {'form': form,
+                                                           'model_id': company.id,
+                                                           'model_name': 'company',
                                                            'h1': 'Edit company info',
                                                            'form_action':
                                                                f'/api/company/edit/{kwargs["company_id"]}/'})
@@ -715,17 +771,14 @@ def company_page_view(request, **kwargs):
     if request.user == company.user:
         is_owner = True
     return render(request, 'company/company-page.html', {'company': company,
+                                                         'model_id': company.id,
+                                                         'model_name': 'company',
                                                          'vacancies': vacancies,
                                                          'is_owner': is_owner})
 
 
 @login_required
 def employee_page_view(request, **kwargs):
-    if request.user.role == 'company':
-        messages.error(request, mark_safe("You registered as a company(to offer jobs). "
-                                          "To create an employee account you should "
-                                          "<a href='/api/logout/'>log out</a> and register a new account"))
-        return redirect('home')
     if kwargs['employee_id'] == 'me':
         employee = Employee.objects.filter(user_id=request.user.id).first()
     else:
@@ -742,6 +795,7 @@ def employee_page_view(request, **kwargs):
 @login_required
 def employee_edit_view(request, **kwargs):
     employee = Employee.objects.filter(id=kwargs['employee_id']).first()
+    manyToManyFields = 0
     if not employee:
         messages.error(request, 'There is no such a profile')
         return redirect('home')
@@ -751,7 +805,10 @@ def employee_edit_view(request, **kwargs):
     if request.method == 'POST':
         form = EmployeeRegistrationForm(request.POST)
         if form.is_valid():
+            skills = form.cleaned_data.pop('skills')
+            media = form.cleaned_data.pop('media')
             Employee.objects.update_or_create(id=employee.id, defaults=form.cleaned_data)
+            employee.media.set(media)
             messages.success(request, "Your profile was successfully updated!")
             return redirect(f'/api/employee/{kwargs["employee_id"]}')
     else:
@@ -767,11 +824,14 @@ def employee_edit_view(request, **kwargs):
             else:
                 initial.update({field.name: employee.serializable_value(field.name)})
         form = EmployeeRegistrationForm(initial=initial)
-    return render(request, 'registration/employee-form.html', {'form': form,
-                                                               'h1': 'Edit employee profile',
-                                                               'form_action':
-                                                                   f'/api/employee/edit/{kwargs["employee_id"]}/',
-                                                               'manyToManyFields': manyToManyFields })
+
+    return render(request, 'registration/role-form.html', {'form': form,
+                                                           'model_id': employee.id,
+                                                           'model_name': 'employee',
+                                                           'h1': "Edit employee page",
+                                                           'form_action':
+                                                               f'/api/employee/edit/{kwargs["employee_id"]}/',
+                                                           'manyToManyFields': manyToManyFields })
 
 
 def test_view(request):  # testing searching algorithm
@@ -796,9 +856,5 @@ def test_slash_view(request):
 def test2(request):
     if request.method == 'GET':
         return render(request, 'test.html')
-    elif request.method == 'POST':
-        print(f'request.POST: {request.POST}')
-        print('json response sent')
-        return JsonResponse({'redirectTo': reverse('home')})
     else:
         print('another error')

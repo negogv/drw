@@ -12,8 +12,10 @@ DRW
         <div class="d-flex justify-content-center">
             {% csrf_token %}
             {% if is_owner == True %}
-            <a style="margin-bottom: 50px; margin-top: 42px;" class="btn btn-outline-primary flex-fill" href="#"
+            <a style="margin-bottom: 50px; margin-top: 42px;" class="btn btn-outline-danger flex-fill" href="#"
                 id="editBtn">Edit vacancy</a>
+            <a style="margin-bottom: 50px; margin-top: 42px;" class="btn btn-outline-primary flex-fill" href="#"
+                id="manageBtn">Manage vacancy</a>
             {% endif %}
         </div>
 

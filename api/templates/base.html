@@ -33,41 +33,50 @@
     <!-- Custom JavaScript-->
 
     <title>{% block tittle %} DRW {% endblock %}</title>
+    <style>
+        body {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        main {
+            flex: 1;
+        }
+    </style>
 </head>
 
-<body class="container">
+<body>
     {% include 'partials/navbar.html' %}
 
-    {% if messages %}
-    {% for message in messages %}
-    <div class="alert alert-{{message.tags}} alert-dismissible fade show" role="alert">
-        <p>{{ message }}</p>
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
-    {% endfor %}
-    {% endif %}
+    <main>
+        <div class="container mt-4">
+            <!-- for django functions -->
+            {% if messages %}
+            {% for message in messages %}
+            <div class="alert alert-{{message.tags}} alert-dismissible fade show" role="alert">
+                <p>{{ message }}</p>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            {% endfor %}
+            {% endif %}
 
-    <div class="container mt-4">
-        {% block content %}
-        {% endblock %}
-    </div>
+            <!-- for js functions -->
+            <div class="alert alert-dismissible fade show" role="alert" id="alert" style="display: none;">
+                <p id="alertMsg"></p>
+                <!-- getById(alert).classname += alert-...
+                                   .style.removeProperty(display) 
+                     getById(alertMsg).innerHTML = `...` -->
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
 
-    <script>
-        document.body.addEventListener('htmx:configRequest', (event) => {
-            event.detail.headers['X-CSRFToken'] = '{{ csrf_token }}';
-        })
 
-        htmx.onLoad(function (content) {
-            var sortables = content.querySelectorAll(".sortable");
-            for (var i = 0; i < sortables.length; i++) {
-                var sortable = sortables[i];
-                new Sortable(sortable, {
-                    animation: 150,
-                    ghostClass: 'blue-background-class'
-                });
-            }
-        })
-    </script>
+            {% block content %}
+            {% endblock %}
+        </div>
+    </main>
+
+    {% include 'partials/footer.html' %}
 </body>
 
 </html>

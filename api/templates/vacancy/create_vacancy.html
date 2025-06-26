@@ -6,26 +6,34 @@
     {% csrf_token %}
 
     <div>
-        {{ form.title.label_tag }}
+        <div class="fs-5">
+            {{ form.title.label_tag }}
+        </div>
         {{ form.title }}
     </div>
 
     <div>
-        {{ form.country.label_tag }}
+        <div class="fs-5">
+            {{ form.country.label_tag }}
+        </div>
         {{ form.country }}
     </div>
 
     <div>
-        {{ form.state.label_tag }}
+        <div class="fs-5">
+            {{ form.state.label_tag }}
+        </div>
         {{ form.state }}
     </div>
 
     <div>
-        {{ form.city.label_tag }}
+        <div class="fs-5">
+            {{ form.city.label_tag }}
+        </div>
         {{ form.city }}
     </div>
 
-    <div>
+    <div id="tagSearchDiv" style="position: relative;">
         <label for="skill-input">Skills:</label>
         <div class="border border-dark-subtle border-1 d-flex p-2 rounded-4 mb-2" id="selected-skills">
             <span class="text-muted">Nothing is selected</span>
@@ -34,35 +42,48 @@
         <input type="text" class="form-select" id="skill-input" autocomplete="off" name="skill"
             placeholder="Select required or recomendated skills">
         <ul class="list-group" id="skills-list"
-            style="position: absolute; max-height: 100%; overflow-y: auto; display: none; width: 100%;">
+            style="position: absolute; max-height: 150%; overflow-y: auto; display: none; width: 100%;">
             <!--  -->
         </ul>
     </div>
 
     <div>
-        {{ form.text.label_tag }}
+        <div class="fs-5">
+            {{ form.text.label_tag }}
+        </div>
         {{ form.text }}
     </div>
 
     <div>
-        {{ form.salary.label_tag }}
+        <div class="fs-5">
+            {{ form.salary.label_tag }}
+        </div>
         {{ form.salary }}
     </div>
 
     <div>
-        {{ form.currency.label_tag }}
+        <div class="fs-5">
+            {{ form.currency.label_tag }}
+        </div>
         {{ form.currency }}
     </div>
 
     <div>
-        {{ form.salary_type.label_tag }}
+        <div class="fs-5">
+            {{ form.salary_type.label_tag }}
+        </div>
         {{ form.salary_type }}
     </div>
 
     <div>
+        <label for="mediaInput">Add photos to your vacancy!</label>
+        <input type="file" accept="image/*" class="form-controll" id="{% model_id %}" placeholder="Photos here">
+    </div>
+
+    <!-- <div>
         {{ form.media_array.label_tag }}
         {{ form.media_array }}
-    </div>
+    </div> -->
 
     <div id="tagsInputDiv" hidden>
         {{ form.tags }}
@@ -72,6 +93,9 @@
 </form>
 
 {% load static %}
+<script>
+    const csrfToken = document.querySelector("[name=csrfmiddlewaretoken]").value;
+</script>
 <script src="{% static 'js/search-skills.js' %}"></script>
 <script src="{% static 'js/location.js' %}"></script>
 {% endblock %}

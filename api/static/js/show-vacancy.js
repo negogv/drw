@@ -1,6 +1,7 @@
 var csrfToken,
     title,
     editBtn,
+    manageBtn,
     locationP,
     owner,
     ownerEmail,
@@ -16,6 +17,7 @@ const vacancyId = window.location.href.match(/(?<=vacancy\/)\d+/)[0];
 document.addEventListener("DOMContentLoaded", async function () {
     title = document.querySelector("h1");
     editBtn = document.getElementById("editBtn");
+    manageBtn = document.getElementById("manageBtn");
     locationP = document.getElementById("location");
     owner = document.getElementById("owner");
     ownerEmail = document.getElementById("owner-email");
@@ -79,6 +81,9 @@ document.addEventListener("DOMContentLoaded", async function () {
     if (editBtn) {
         editBtn.href = `/api/vacancy/edit/${vacancyId}`;
     }
+    if (manageBtn) {
+        manageBtn.href = `/api/vacancy/${vacancyId}/manage/`;
+    }
     locationP.innerText = vacancy.location;
     owner.innerText = company.name;
     owner.href = `/api/company/${company.id}`;
@@ -88,12 +93,12 @@ document.addEventListener("DOMContentLoaded", async function () {
         vacancy.salary + " " + vacancy.currency + " for " + vacancy.salary_type;
     text.innerText = vacancy.text;
     for (let tag of vacancy.tags || []) {
-        slugName = tag.replace(/^\s+|\s+$/g, "");
+        slugName = tag.name.replace(/^\s+|\s+$/g, "");
         slugName = slugName.toLowerCase();
         tags.insertAdjacentHTML(
             "beforeend",
             `
-            <a class="btn btn-info" href="/api/vacancy/search/?tag=${slugName}"> ${tag} </a>
+            <a class="btn btn-info" href="/api/vacancy/search/?tag=${slugName}"> ${tag.name} </a>
             `
         );
     }

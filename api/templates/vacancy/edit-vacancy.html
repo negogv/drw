@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<h1>Create New Vacancy</h1>
+<h1>Edit Vacancy</h1>
 <form method="post" id="vacancy-form">
     {% csrf_token %}
 
@@ -45,8 +45,18 @@
         {{ form.salary_type }}
     </div>
 
-    <div>
-
+    <div id="tagSearchDiv">
+        <label for="skill-input">Skills:</label>
+        <div class="border border-dark-subtle border-1 d-flex p-2 rounded-4 mb-2" id="selected-skills">
+            <span class="text-muted">Nothing is selected</span>
+            <!-- <button class="btn btn-outline-secondary rounded-pill">Python</button> -->
+        </div>
+        <input type="text" class="form-select" id="skill-input" autocomplete="off" name="skill"
+            placeholder="Select required or recomendated skills">
+        <ul class="list-group" id="skills-list"
+            style="position: absolute; max-height: 150%; overflow-y: auto; display: none; width: 100%;">
+            <!--  -->
+        </ul>
     </div>
 
     <div>
@@ -54,18 +64,10 @@
         {{ form.media_array }}
     </div>
 
-
-
-    <div class="tag-selection">
-        <h3>Add Tags</h3>
-        {{ form.tag_search }}
-        <div id="search-results"></div>
-
-        <h4>Selected Tags</h4>
-        <div id="selected-tags">
-            {{ form.selected_tags }}
-        </div>
+    <div id="tagsInputDiv" hidden>
+        {{ form.tags }}
     </div>
+
 
     <button type="submit" class="btn btn-primary">Create Vacancy</button>
 </form>
@@ -73,6 +75,33 @@
 {{ manyToManyFields|json_script:"manyToManyFields" }}
 
 {% load static %}
-<script src="{% static 'js/edit-vacancy.js' %}"></script>
+<script>
+    const csrfToken = document.querySelector("[name=csrfmiddlewaretoken]").value;
+</script>
+<script src="{% static 'js/search-skills.js' %}"></script>
+<script src="{% static 'js/edit-page.js' %}"></script>
 <script src="{% static 'js/location.js' %}"></script>
+<script>
+    skillsList.style.removeProperty('display');
+    const skillsListRect = skillsList.getBoundingClientRect();
+    const absoluteSkillsBottom = skillsListRect.bottom + window.pageYOffset;
+    skillsList.style.display = 'none';
+
+    const observer = new MutationObserver((mutationList, observer) => {
+        for (const mutation of mutationList) {
+            if (mutation.type === "attributes") {
+                window.scrollTo({
+                    top: absoluteSkillsBottom,
+                    behavior: 'smooth'
+                });
+                console.log(mutation.attributeName)
+                console.log(mutation)
+            }
+        }
+    });
+
+    const observeConfig = { attributes: true };
+
+    observer.observe(skillsList, observeConfig);
+</script>
 {% endblock %}

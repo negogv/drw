@@ -5,10 +5,42 @@ Register a New User
 {% endblock %}
 
 {% block content %}
-<h1>Register a New User</h1>
-<form class="form-with-validation" action="" method="post">
-    {% csrf_token %}
-    {{ form }}
-    <button class="form-submit">Submit</button>
-</form>
+
+<!--<form action="">-->
+<!--    <input type="file" id="mediaInput">-->
+<!--    <button type="submit">POST IMAGE</button>-->
+<!--</form>-->
+<img src="" id="retrieved">
+<button onclick="func()">POOOOOOOOST REQUEST</button>
+
+{% csrf_token %}
+
+{% load static %}
+<script>
+    async function func() {
+        const csrfToken = document.querySelector(
+            "[name=csrfmiddlewaretoken]"
+        ).value;
+        const imgEl = document.getElementById('retrieved')
+        let imageUrl = await fetch("/api/media/42/", {
+            method: "GET",
+            headers: {
+                "X-CSRFToken": csrfToken,
+            },
+        }).then((response) => {
+            const contentType = response.headers.get("content-type");
+            if (contentType && contentType.startsWith("image/")) {
+                var blob = response.blob()
+                return blob;
+            }
+        }).then((blob) => {
+            var imageUrl = window.URL.createObjectURL(blob);
+            console.log(imageUrl);
+            return imageUrl
+
+        });
+        imgEl.src = imageUrl
+    }
+</script>
+
 {% endblock %}

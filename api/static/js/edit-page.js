@@ -34,8 +34,6 @@ if (!header1.innerText.includes("New")) {
         const element = event.target;
         const originalValue = element.dataset.originalValue;
         const currentValue = element.value;
-        console.log("event is called");
-        console.log(originalValue, currentValue);
 
         if (currentValue === originalValue) {
             element.style.removeProperty("border-color");

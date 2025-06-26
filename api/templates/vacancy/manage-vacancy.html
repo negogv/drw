@@ -17,44 +17,18 @@ DRW
     </div> -->
     <div id="tags">
         <h3>Tags:</h3>
-        <div id="vacancyTagButtonsDiv">
+        <div id="vacancyTagsDiv" class="mt-2">
             <!-- tag buttons. href to "search vacancy by this tag"  -->
         </div>
     </div>
-    <span id="vacancyId" hidden></span>
 </div>
-<div name="respondents" id="respondentsCards">
-    <h2 style="text-align: center;">
+<div name="respondents" id="respondentsCards" class="border-top border-black mt-2">
+    <h2 style="text-align: center;" class="p-4">
         Respondents
     </h2>
-    <div class="card m-1 text-bg-light">
-        <div class="card-header" id="employeeName">
-            <h3>Max Weber</h3>
-        </div>
-        <div class="p-3 row card-body">
-            <div class="col col-10">
-                <p id="employeeLocation"><b>Location: </b></p>
-                <p id="employeeEmail"><b>Email: </b></p>
-                <p id="employeePhone"><b>Phone: </b></p>
-                <div id="employeeSkills">
-                    <span class="badge rounded-pill text-bg-dark">
-                    </span>
-                </div>
-            </div>
-            <div class="col col-2 d-flex flex-fill">
-                <button role="button" class="btn btn-danger m-1 flex-fill"
-                    style="text-align: center; font-size: larger;" onclick="declineApplication(this)">
-                    Decline
-                </button>
-            </div>
-        </div>
-        <div class="card-footer d-flex justify-content-center">
-            <a class="btn stretched-link" style="text-align: center;" href="/api/employee/${}">See
-                profile</a>
-        </div>
-    </div>
 </div>
 
+{% csrf_token %}
 {{ vacancyId|json_script:"vacancyId" }}
 
 {% load static %}

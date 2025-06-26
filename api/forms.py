@@ -35,10 +35,27 @@ class RegistrationForm(BaseUserCreationForm):
 class CompanyRegistrationForm(forms.Form):
     class Meta:
         model = Company
-        fields = ['name', 'country', 'state', 'city', 'text', 'media_array']
+        fields = ['name', 'email', 'phone', 'country', 'state', 'city', 'text', 'media']
 
     name = forms.CharField(max_length=300, widget=forms.TextInput(attrs={'class': 'form-control',
                                                                          'placeholder': 'Name for a company'}))
+
+    phone = forms.CharField(
+        max_length=20,
+        validators=[
+            RegexValidator(
+                regex=r'^\+?1?\d{9,15}$',  # Example regex for international phone numbers
+                message="Phone number must be entered in the format: '+999999999'. Up to 15 digits allowed.")
+        ],
+        widget=forms.TextInput(attrs={'placeholder': 'Contact mobile number',
+                                      'class': 'form-control'})
+    )
+
+    email = forms.EmailField(required=True,
+                             label='Contact email',
+                             widget=forms.TextInput(attrs={'placeholder': 'your.email@example.com',
+                                                           'class': 'form-control'}))
+
     country = forms.CharField(
         widget=forms.TextInput(attrs={'class': 'form-select',
                                       'id': 'country-input',
@@ -62,18 +79,21 @@ class CompanyRegistrationForm(forms.Form):
                                       'name': 'city',
                                       'placeholder': 'Select a city'})
     )
+
     text = forms.CharField(max_length=400, widget=forms.Textarea(attrs={'class': 'form-control',
                                                                         'placeholder':
                                                                         'Tell us more about your enterprise!'}),
                            required=False)
-    # TODO: text = TextField
-    media_array = forms.CharField(max_length=80)  # TODO: media mechanism
+
+    media = forms.CharField(max_length=80, required=False)
 
 
 class EmployeeRegistrationForm(forms.ModelForm):
     class Meta:
         model = Employee
-        fields = ['country', 'state', 'city', 'phone', 'email', 'text', 'skills', 'cv', 'media_array']
+        fields = ['country', 'state', 'city', 'phone', 'email', 'text', 'skills', 'cv']
+
+    media = forms.CharField(required=False)
 
     country = forms.CharField(
         widget=forms.TextInput(attrs={'class': 'form-select',
@@ -108,17 +128,18 @@ class EmployeeRegistrationForm(forms.ModelForm):
         widget=forms.TextInput(attrs={'placeholder': '+123456789012',
                                       'class': 'form-control'})
     )
-    # phone = forms.CharField(max_length=20, required=True, label="Contact phone")
+
     email = forms.EmailField(required=True,
                              label='Contact email',
                              widget=forms.TextInput(attrs={'placeholder': 'your.email@example.com',
                                                            'class': 'form-control'}))
+
     text = forms.CharField(widget=forms.Textarea(attrs={'placeholder': 'Tell us more about you!',
                                                         'class': 'form-control',
-                                                        'rows': '5'}),
+                                                        'rows': '5',
+                                                        'style': "height: unset;"}),
                            required=False)
     skills = forms.CharField()
-    media_array = forms.CharField(max_length=80)
     cv = forms.FileField(allow_empty_file=True,
                          required=False,
                          widget=forms.FileInput(attrs={'class': 'form-control-file',
@@ -189,7 +210,7 @@ class NewVacancyForm(forms.ModelForm):
                            ('hour', 'Hour'))
     salary_type = forms.ChoiceField(choices=salary_type_choices,
                                     widget=forms.Select(attrs={'class': 'form-select'}))
-    media_array = forms.CharField()  # TODO
+    media_array = forms.ImageField()  # TODO
     # tags = forms.ModelMultipleChoiceField(  # TODO: search and select like country
     #     queryset=Skill.objects.all(),
     #     widget=forms.TextInput(),

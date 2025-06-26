@@ -1,10 +1,7 @@
 var TheUser = {
     username: "",
 };
-var par;
-var formDiv;
-var h2;
-var insertedDataUl;
+var par, formDiv, h2, insertedDataUl, csrfToken;
 
 document.addEventListener("DOMContentLoaded", function () {
     par = document.getElementById("result");
@@ -12,6 +9,7 @@ document.addEventListener("DOMContentLoaded", function () {
     h2 = document.getElementsByTagName("h2")[0];
     insertedDataUl = document.getElementById("inserted_data_ul");
     alertDiv = document.getElementById("alert-div");
+    csrfToken = document.querySelector("[name=csrfmiddlewaretoken]").value;
 });
 
 function editSubmittedField(button) {
@@ -104,9 +102,6 @@ function applyEditing(formElement) {
 async function submitUsername() {
     event.preventDefault();
 
-    const csrfToken = document.querySelector(
-        "[name=csrfmiddlewaretoken]"
-    ).value;
     TheUser.csrfmiddlewaretoken = csrfToken;
 
     let username = document.getElementById("username_field").value;
@@ -146,7 +141,7 @@ async function submitUsername() {
         .style.removeProperty("display");
     document.getElementById("is_reg_div").remove();
 
-    TheUser.username = username;
+    TheUser.username = username; // TODO: test with regex or slugify the value
     formDiv.innerHTML = `<h2 class="align-center">Your first name</h2>
         <label>(necessary field)</label>
         <form onsubmit="submitFirstName()" id="firstname_form">
