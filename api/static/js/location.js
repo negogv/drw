@@ -102,7 +102,6 @@ function selectCountry(element) {
     })
         .then((response) => response.json())
         .then((data) => {
-            // console.log(data);
             if (data.length == 0) {
                 stateInput.value = "No states provided";
                 cityInput.value = "No cities provided";
@@ -144,7 +143,6 @@ function selectState(element) {
     )
         .then((response) => response.json())
         .then((data) => {
-            // console.log(data);
             if (data.length == 0) {
                 cityInput.value = stateInput.value;
                 return;

@@ -1,5 +1,5 @@
-var csrfToken,
-    title,
+var title,
+    // csrfToken,
     editBtn,
     manageBtn,
     locationP,
@@ -26,7 +26,8 @@ document.addEventListener("DOMContentLoaded", async function () {
     text = document.getElementById("text");
     tags = document.getElementById("tags");
     applyBtn = document.querySelector(".btn-success");
-    csrfToken = document.querySelector("[name=csrfmiddlewaretoken]").value;
+    const mediaDiv = document.getElementById("media");
+    // csrfToken = document.querySelector("[name=csrfmiddlewaretoken]").value;
 
     let vacancy = await fetch(`/api/get/vacancy/${vacancyId}/`, {
         method: "GET",
@@ -44,11 +45,14 @@ document.addEventListener("DOMContentLoaded", async function () {
             return response.json();
         })
         .then((data) => {
+            console.log(data);
+
             return data;
         })
         .catch((error) => {
             console.error("Fetch completely failed:", error);
         });
+
     let company = await fetch(`/api/get/company/${vacancy.owner}/`, {
         method: "GET",
         headers: {
@@ -84,7 +88,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     if (manageBtn) {
         manageBtn.href = `/api/vacancy/${vacancyId}/manage/`;
     }
-    locationP.innerText = vacancy.location;
+    locationP.innerText = vacancy.city + ", " + vacancy.country;
     owner.innerText = company.name;
     owner.href = `/api/company/${company.id}`;
     ownerEmail.innerText = company.email;
@@ -100,6 +104,14 @@ document.addEventListener("DOMContentLoaded", async function () {
             `
             <a class="btn btn-info" href="/api/vacancy/search/?tag=${slugName}"> ${tag.name} </a>
             `
+        );
+    }
+    for (let mediaInst of vacancy.media) {
+        let imageUrl = await getMediaUrl(mediaInst.id);
+        mediaDiv.insertAdjacentHTML(
+            "beforeend",
+            `<img src="${imageUrl}" class="rounded-3 p-3 border border-2 m-1" alt="error"
+            style="height: 200px; width: 300px; display: flex;">`
         );
     }
 });

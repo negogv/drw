@@ -105,35 +105,38 @@ async function submitUsername() {
     TheUser.csrfmiddlewaretoken = csrfToken;
 
     let username = document.getElementById("username_field").value;
-    let existingUsernames = [];
-    await fetch("/api/get/usernames/", {
-        method: "GET",
-        headers: {
-            "X-CSRFToken": TheUser.csrfmiddlewaretoken,
-            Accept: "application/json",
-        },
-    })
-        .then((response) => {
-            if (!response.ok) {
-                return response.json().then((err) => {
-                    throw err;
-                });
-            }
-            return response.json(); // This returns a promise
-        })
-        .then((data) => {
-            existingUsernames = data.usernames;
-        })
-        .catch((error) => {
-            console.error("Fetch completely failed:", error);
-        });
 
-    if (existingUsernames.includes(username)) {
-        alertDiv.innerHTML = `<div class="alert alert-warning alert-dismissible fade show" role="alert">
-            <p>Username alreade exists, please choose another one</p>
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>`;
-        return;
+    let provingRegEx = /^\w+$/;
+    if (!provingRegEx.test(username)) {
+        displayAlert(
+            "warning",
+            "Invalid username. Possible symbols are:\nA-Z;\na-z;\n0-9;\n_"
+        );
+    }
+    username = username.toLowerCase();
+
+    let isValidated = await fetch("/api/username/validate/", {
+        method: "POST",
+        body: JSON.stringify({
+            username: username,
+        }),
+        headers: {
+            "X-CSRFToken": csrfToken,
+            "Content-Type": "application/json",
+        },
+    }).then((response) => {
+        if (response.status === 204) {
+            return true;
+        } else {
+            return false;
+        }
+    });
+
+    if (!isValidated) {
+        displayAlert(
+            "warning",
+            "Username alreade exists, please choose another one"
+        );
     }
 
     document
@@ -222,12 +225,6 @@ function submitRole(role) {
                 <button class="btn btn-secondary" onclick="editSubmittedField(this)" id="edit-button">Edit</button>
             </div>`
     );
-    // insertedDataUl.insertAdjacentHTML(
-    //     "beforeend",
-    //     `<li class="list-group-item">Role: ${
-    //         TheUser.role.charAt(0).toUpperCase() + TheUser.role.slice(1)
-    //     }</li>`
-    // );
 }
 
 function submitEmail() {
@@ -259,11 +256,10 @@ function submitPhone() {
     phone = phone.replace(cleaningRegEx, "");
     let provingRegEx = /^\+\d{9,15}$/;
     if (!provingRegEx.test(phone)) {
-        alertDiv.innerHTML = `<div class="alert alert-warning alert-dismissible fade show" role="alert">
-            <p>Invalid phone number. Use an international number with "+" symbol</p>
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>`;
-        return;
+        displayAlert(
+            "warning",
+            `Invalid phone number. Use an international number with "+" symbol`
+        );
     }
     TheUser.phone = phone;
     insertedDataUl.insertAdjacentHTML(

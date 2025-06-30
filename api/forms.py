@@ -166,7 +166,7 @@ class LoginForm(forms.Form):
 class NewVacancyForm(forms.ModelForm):
     class Meta:
         model = Vacancy
-        fields = ['title', 'text', 'country', 'city', 'salary', 'currency', 'salary_type', 'media_array', 'tags']
+        fields = ['title', 'text', 'country', 'city', 'salary', 'currency', 'salary_type', 'media', 'tags']
     title = forms.CharField(max_length=200,
                             widget=forms.TextInput(attrs={'placeholder': 'Name of the vacancy',
                                                           'class': 'form-control'}),
@@ -210,23 +210,9 @@ class NewVacancyForm(forms.ModelForm):
                            ('hour', 'Hour'))
     salary_type = forms.ChoiceField(choices=salary_type_choices,
                                     widget=forms.Select(attrs={'class': 'form-select'}))
-    media_array = forms.ImageField()  # TODO
-    # tags = forms.ModelMultipleChoiceField(  # TODO: search and select like country
-    #     queryset=Skill.objects.all(),
-    #     widget=forms.TextInput(),
-    #     required=False
-    # )
+    media = forms.CharField(required=False)
     tags = forms.CharField()
-
-    # def clean_tags(self):
-    #     tag_ids = [int(id) for id in self.data['tags'].split('-')]
-    #     skills = Skill.objects.filter(id__in=tag_ids)
-    #     return tag_ids
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # if 'tags' in self.data:
-        #     data = self.data
-        #     tag_ids = [int(id) for id in self.data['tags'].split('-')]
-        #     self.fields['tags'].queryset = Skill.objects.filter(id__in=tag_ids)
 

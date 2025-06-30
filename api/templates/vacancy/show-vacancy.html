@@ -12,7 +12,7 @@ DRW
         <div class="d-flex justify-content-center">
             {% csrf_token %}
             {% if is_owner == True %}
-            <a style="margin-bottom: 50px; margin-top: 42px;" class="btn btn-outline-danger flex-fill" href="#"
+            <a style="margin-bottom: 50px; margin-top: 42px;" class="btn btn-outline-success flex-fill" href="#"
                 id="editBtn">Edit vacancy</a>
             <a style="margin-bottom: 50px; margin-top: 42px;" class="btn btn-outline-primary flex-fill" href="#"
                 id="manageBtn">Manage vacancy</a>
@@ -51,7 +51,8 @@ DRW
             <h2>Tags:</h2>
             <div id="tags">
             </div>
-            <!-- media files -->
+        </div>
+        <div class="d-flex flex-row flex-wrap justify-content-center" id="media">
         </div>
     </div>
     {% if user.role == "employee" %}
@@ -62,6 +63,41 @@ DRW
     {% endif %}
 </div>
 
+{% csrf_token %}
 {% load static %}
-<script src="{% static 'js/show-vacancy.js' %}"></script>
+<script>
+    const csrfToken = document.querySelector("[name=csrfmiddlewaretoken]").value;
+</script>
+<script src="{% static 'js/retrieve-media.js' %}" async></script>
+<script src="{% static 'js/show-vacancy.js' %}" async></script>
+<script>
+    async function loadMedia() {
+        const mediaDiv = document.getElementById('media');
+        const [medias, urls] = await getMediaUrlList('vacancy', vacancyId);
+
+        if (medias && urls) {
+            mediaDiv.innerHTML = "";
+            for (let url of urls) {
+                mediaDiv.insertAdjacentHTML('beforeend',
+                    `<img src="${url}" class="rounded-3 p-3 border border-2 m-1" alt="error"
+                    style="height: 200px; width: 300px; display: flex;">`
+                )
+            }
+        }
+    }
+    // async function loadMediaFromVacancy() {
+    //     console.log('running');
+
+    //     if (vacancyMedia) {
+    //         for (let media of vacancyMedia) {
+    //             let imageUrl = await getMediaUrl(media.id)
+    //             mediaDiv.insertAdjacentHTML('beforeend',
+    //                 `<img src="${imageUrl}" class="rounded-3 p-3 border border-2 m-1" alt="error"
+    //                 style="height: 200px; width: 300px; display: flex;">`
+    //             )
+    //         }
+    //     }
+    // }
+    // loadMediaFromVacancy()
+</script>
 {% endblock %}

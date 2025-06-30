@@ -7,33 +7,35 @@ DRW
 {% block content %}
 
 <div class="container">
-    <!-- hier könnte ein logo sein -->
-    <!-- <h1 style="text-align: center;">{{ company.name }}</h1> -->
     <div>
         <div id="company-info">
-            <!-- add a logo to eigene column -->
-            <div class="d-flex align-items-center">
+            <div class="d-flex flex-row align-items-center" style="position: relative;">
+                <img src="" class="rounded-circle p-3" alt="error" id="profilePic"
+                    style="display: none; height: 100px; width: 100px;">
                 <h1>
                     {{ company.name }}
                 </h1>
-                {% if is_owner == True %}
-                <a style="margin-left: 20px;" class="btn btn-outline-primary"
+            </div>
+            {% if is_owner == True %}
+            <div class="d-flex align-items-center">
+                <a style="width: 100%;" class="btn btn-outline-primary my-2"
                     href="/api/company/edit/{{ company.id }}">Edit
                     company profile</a>
-                {% endif %}
             </div>
+            {% endif %}
             <div class="row d-flex justify-content-between">
                 <p>
+                    <b>City: </b>
                     {{ company.city }},
                     {{ company.country }}
                 </p>
                 <div>
                     <p>
-                        Email:
+                        <b>Email: </b>
                         {{ company.email }}
                     </p>
                     <p>
-                        Phone number:
+                        <b>Phone number: </b>
                         {{ company.phone }}
                     </p>
                 </div>
@@ -64,6 +66,27 @@ DRW
             {% endif %}
         </div>
     </div>
-
 </div>
+<span id="modelId" hidden>{{ company.id }}</span>
+
+{% csrf_token %}
+{% load static %}
+<script>
+    const csrfToken = document.querySelector("[name=csrfmiddlewaretoken]").value;
+</script>
+<script src="{% static 'js/retrieve-media.js' %}">
+</script>
+<script>
+    async function loadMedia() {
+        const modelId = document.getElementById('modelId').textContent;
+        const [mediaArray, mediaUrls] = await getMediaUrlList('company', modelId);
+
+        if (mediaArray && mediaUrls) {
+            let profilePic = document.getElementById('profilePic');
+            profilePic.style.display = "flex";
+            profilePic.src = mediaUrls[0];
+        }
+    }
+    loadMedia()
+</script>
 {% endblock %}

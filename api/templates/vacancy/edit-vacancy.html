@@ -45,7 +45,7 @@
         {{ form.salary_type }}
     </div>
 
-    <div id="tagSearchDiv">
+    <div id="tagSearchDiv" class="mb-4">
         <label for="skill-input">Skills:</label>
         <div class="border border-dark-subtle border-1 d-flex p-2 rounded-4 mb-2" id="selected-skills">
             <span class="text-muted">Nothing is selected</span>
@@ -59,17 +59,26 @@
         </ul>
     </div>
 
-    <div>
-        {{ form.media_array.label_tag }}
-        {{ form.media_array }}
-    </div>
-
     <div id="tagsInputDiv" hidden>
         {{ form.tags }}
     </div>
+    <div hidden>
+        {{ form.media }}
+    </div>
 
+    <div class="d-flex flex-row flex-wrap justify-content-center" id="media">
 
-    <button type="submit" class="btn btn-primary">Create Vacancy</button>
+    </div>
+
+    <div class="d-flex flex-column flex-fill align-items-center my-2 border border-2 border-secondary p-3 rounded-3">
+        <label class="fs-5" for="mediaInput">Upload additional media to your vacancy</label>
+        <div class="d-flex row w-100">
+            <input type="file" id="mediaInput" class="form-control col" accept="image/*" multiple>
+            <button id="uploadMediaBtn" onclick="postMediaBtn()" class="btn btn-success col">Upload</button>
+        </div>
+    </div>
+
+    <button type="submit" class="btn btn-primary mt-4 w-100">Submit</button>
 </form>
 
 {{ manyToManyFields|json_script:"manyToManyFields" }}
@@ -78,9 +87,12 @@
 <script>
     const csrfToken = document.querySelector("[name=csrfmiddlewaretoken]").value;
 </script>
+<script src="{% static 'js/alert.js' %}"></script>
 <script src="{% static 'js/search-skills.js' %}"></script>
 <script src="{% static 'js/edit-page.js' %}"></script>
 <script src="{% static 'js/location.js' %}"></script>
+<script src="{% static 'js/retrieve-media.js' %}"></script>
+<script src="{% static 'js/upload-media.js' %}"></script>
 <script>
     skillsList.style.removeProperty('display');
     const skillsListRect = skillsList.getBoundingClientRect();
@@ -103,5 +115,32 @@
     const observeConfig = { attributes: true };
 
     observer.observe(skillsList, observeConfig);
+</script>
+<script>
+    const vacancyId = window.location.href.match(/(?<=edit\/)\d+/)[0];  // change if url will be changed
+    const mediaDiv = document.getElementById('media');
+
+    async function loadMedia() {
+        const [medias, urls] = await getMediaUrlList('vacancy', vacancyId);
+
+        if (medias && urls) {
+            mediaDiv.innerHTML = "";
+            for (let url of urls) {
+                mediaDiv.insertAdjacentHTML('beforeend',
+                    `<img src="${url}" class="rounded-3 p-3 border border-2 m-1" alt="error"
+                    style="height: 200px; width: 300px; display: flex;">`
+                )
+            }
+        }
+    }
+    async function postMediaBtn() {
+        const isUploaded = await postAllImages('vacancy', vacancyId)
+        if (isUploaded) {
+            loadMedia()
+        } else {
+            displayAlert('danger', 'Error occured while uploading the media files')
+        }
+    }
+    loadMedia()
 </script>
 {% endblock %}

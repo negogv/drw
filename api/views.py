@@ -1,4 +1,3 @@
-import base64
 import requests
 from django.urls import reverse
 from django.shortcuts import render, redirect, get_object_or_404
@@ -25,18 +24,13 @@ from rest_framework.request import Request
 from rest_framework.decorators import api_view, renderer_classes
 from rest_framework.renderers import BaseRenderer
 from rest_framework import generics, viewsets, status
-# from .models import *
 from . import serializers
 import api.models
 from .serializers import *
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser, FileUploadParser
-import os.path as path
 from .forms import RegistrationForm, LoginForm, EmployeeRegistrationForm, CompanyRegistrationForm, NewVacancyForm
 import json
 import struct
-# Create your views here.
-
-from django.contrib.auth.forms import UserCreationForm
 
 db = mysql.connector.connect(
     host='localhost',
@@ -130,29 +124,6 @@ class ModelSearchList(APIView):
             .filter(salary__lte=max_salary).filter(salary_type__in=salary_type)
 
 
-# class FeedbackViews:
-#     queryset = VacancyFeedback.objects.all()
-#     serializer_class = VacancyFeedbackSerializer
-#
-#
-# class FeedbackListCreate(FeedbackViews, generics.ListCreateAPIView):
-#     pass
-#
-#
-# class FeedbackRetrieveUpdateDestroy(FeedbackViews, generics.RetrieveUpdateDestroyAPIView):
-#     pass
-
-
-class RetrieveMediaArray(APIView):
-    def get(self, request, **kwargs):
-        model_name = kwargs['model'].capitalize()  # To which class should we attach new mediafile
-        instance = getattr(api.models, model_name).objects.get(id=kwargs['pk'])
-
-        media_array = instance.media_array.split(', ')
-
-        return Response(media_array, status=status.HTTP_200_OK)
-
-
 class MultipartRenderer(BaseRenderer):
     media_type = 'multipart/form-data'
     format = 'multipart'
@@ -190,22 +161,22 @@ class GetMediaArrayFromInst(APIView):
         return JsonResponse(body, safe=False, status=200)
 
 
+def create_mediafile(file) -> MediaFile:
+    """
+    Takes an image in format TemporaryUploadedFile, saves in api_mediafile table and returns new-created primary key
+    """
+    with transaction.atomic():
+        binary_data = b''.join(chunk for chunk in file.chunks())
+
+        media_file = MediaFile.objects.create(
+            binary=binary_data,
+            name=file.name
+        )
+    return media_file
+
+
 class CreateOneMediaFile(APIView):
     parser_classes = (MultiPartParser, FormParser, JSONParser, FileUploadParser)
-
-    @staticmethod
-    def create_mediafile(file) -> MediaFile:
-        """
-        Takes an image in format TemporaryUploadedFile, saves in api_mediafile table and returns new-created primary key
-        """
-        with transaction.atomic():
-            binary_data = b''.join(chunk for chunk in file.chunks())
-
-            media_file = MediaFile.objects.create(
-                binary=binary_data,
-                name=file.name
-            )
-        return media_file
 
     def post(self, request, **kwargs):
         """
@@ -225,9 +196,31 @@ class CreateOneMediaFile(APIView):
         if instance is None:
             return JsonResponse({'error': 'Not Found',
                                  'message': "Instance object isn't found"}, status=404)
-
-        media_id = self.create_mediafile(file_obj)
+        # TODO: Check if there is already media files, if so, delete them from field and from db at all
+        media_id = create_mediafile(file_obj)
         instance.media.set([media_id])
+        instance.save()
+
+        return JsonResponse({'mediaId': media_id.id}, status=200)
+
+
+class CreateManyMediaFiles(APIView):
+    parser_classes = (MultiPartParser, FormParser, JSONParser, FileUploadParser)
+
+    def post(self, request, **kwargs):
+        file_obj = request.data.get('file')
+        if not file_obj:
+            return JsonResponse({'error': 'File not provided',
+                                 'message': 'Please upload a file'}, status=400)
+        model_name = kwargs['model_name'].capitalize()
+        model_id = kwargs['model_id']
+        instance = getattr(api.models, model_name).objects.filter(id=model_id).first()
+        if instance is None:
+            return JsonResponse({'error': 'Not Found',
+                                 'message': "Instance object isn't found"}, status=404)
+
+        media_id = create_mediafile(file_obj)
+        instance.media.add(media_id)
         instance.save()
 
         return JsonResponse({'mediaId': media_id.id}, status=200)
@@ -253,9 +246,6 @@ class HomeView(TemplateView):
     template_name = 'index.html'
 
 
-# TODO: change 404 to 204 response. Erklärung dazu:
-#   404 Not Found, Use when: The requested resource (or collection) does not exist.
-#   204 No Content, Use when: The request was successful, but there's intentionally no data to return.
 @require_POST
 def update_user_endpoint(request):
     data = json.loads(request.body.decode('utf-8'))
@@ -296,6 +286,17 @@ def decline_application_endpoint(request, **kwargs):
                              'message': 'Data in request body is invalid'}, status=400)
 
 
+@csrf_exempt
+@require_POST
+def validate_username_endpoint(request):
+    data = json.loads(request.body.decode('utf-8'))
+    if TheUser.objects.filter(username=data['username']):
+        return JsonResponse({'error': 'Not available',
+                             'message': 'Username is not available'}, status=409)
+    else:
+        return JsonResponse({}, status=204)
+
+
 @require_GET
 def get_user_data_endpoint(request, **kwargs):
     try:
@@ -323,30 +324,20 @@ def get_usernames_endpoint(request):
 def get_vacancy_endpoint(request, **kwargs):
     try:
         vacancy = Vacancy.objects.get(id=kwargs['vacancy_id'])
-        tags = []
-        for tag in vacancy.tags.all():
-            tags.append({'id': tag.id,
-                         'name': tag.name})
 
-        respondents = []
-        for resp in vacancy.respondents.all():
-            skills = []
-            for skill in resp.skills.all():
-                skills.append({'id': skill.id,
-                               'name': skill.name})
-            respondents.append({'id': resp.id,
-                                'name': resp.user.first_name + " " + resp.user.last_name,
-                                'location': resp.city + ", " + resp.country,
-                                'email': resp.email,
-                                'phone': resp.phone,
-                                'skills': skills,
-                                'userId': resp.user.id})
-
-        body = model_to_dict(vacancy)
-        body['location'] = vacancy.city + ", " + vacancy.country
-        body['tags'] = tags
-        body['currency'] = vacancy.currency.name
-        body['respondents'] = respondents
+        body = dict()
+        for field in Vacancy._meta.get_fields()[2:]:
+            if isinstance(field, ManyToManyField):
+                field_values = []
+                for el in vacancy.__getattribute__(field.attname).all():
+                    field_values.append({'name': el.name,
+                                         'id': el.id})
+                body.update({field.name: field_values})
+            elif field.attname == 'currency_id':
+                currency = Currency.objects.get(id=vacancy.serializable_value(field.name))
+                body.update({field.name: currency.code})
+            else:
+                body.update({field.name: vacancy.serializable_value(field.name)})
         return JsonResponse(body)
     except Vacancy.DoesNotExist:
         return HttpResponse({}, status=status.HTTP_404_NOT_FOUND)
@@ -406,7 +397,10 @@ def get_vacs_c_profile_endpoint(request, **kwargs):
 def get_company_endpoint(request, **kwargs):
     try:
         company = Company.objects.get(id=kwargs['company_id'])
-        return JsonResponse(model_to_dict(company))
+        company_media = [media.id for media in company.media.all()]
+        company_dict = model_to_dict(company, exclude='media')
+        company_dict.update({'media': company_media})
+        return JsonResponse(company_dict, safe=False)
     except Company.DoesNotExist:
         return JsonResponse({'error': 'Company is not found'}, status=204)
 
@@ -566,7 +560,7 @@ def login_view(request):
         logging = login_user(request)
         if logging is True:
             messages.success(request, "You have logged in!")
-            return redirect('home')  # TODO: redirect to user page or something
+            return redirect('profile')
         else:
             messages.error(request, f"Password and username aren't passing to each other")
             return redirect('login')
@@ -647,6 +641,9 @@ def new_vacancy_view(request, **kwargs):
 @require_GET
 def search_tags(request):
     query = request.GET.get('tag_search', '')
+    # if there is model article with foreign key to r(reporter) you can find all articles where the r is a foreign key
+    # r.article_set.all()
+    # r.article_set.filter(headline__startswith="This")
     if query:
         tags = Skill.objects.filter(name__icontains=query)[:10]
         results = [{'id': tag.id, 'name': tag.name} for tag in tags]
@@ -682,6 +679,7 @@ def vacancy_edit_view(request, **kwargs):
         if form.is_valid():
             tags = form.cleaned_data.pop('tags').split('-')
             vacancy.tags.set(tags)
+            form.cleaned_data.pop('media')
             Vacancy.objects.update_or_create(id=vacancy.id, defaults=form.cleaned_data)
             return redirect('home')
         else:
@@ -742,9 +740,12 @@ def company_edit_view(request, **kwargs):
     if request.method == 'POST':
         form = CompanyRegistrationForm(request.POST)
         if form.is_valid():
+            form.cleaned_data.pop('media')
             Company.objects.update_or_create(id=company.id, defaults=form.cleaned_data)
             messages.success(request, "Company info was successfully updated!")
             return redirect(f'/api/company/{kwargs["company_id"]}')
+        else:
+            return JsonResponse({'errors': form.errors}, status=400)
     else:
         initial = dict()
         for field in Company._meta.get_fields()[2:]:
@@ -854,7 +855,5 @@ def test_slash_view(request):
 
 
 def test2(request):
-    if request.method == 'GET':
-        return render(request, 'test.html')
-    else:
-        print('another error')
+    req: requests.Response = requests.post('http://127.0.0.1:8000/api/post/username/validate/',
+                                           json={'username': 'anaskn_skl'})

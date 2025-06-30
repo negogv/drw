@@ -20,7 +20,6 @@ async function getMediaUrl(mediaId) {
             var imageUrl = window.URL.createObjectURL(blob);
             return imageUrl;
         });
-    console.log(imageUrl);
     return imageUrl;
 }
 
@@ -56,7 +55,7 @@ async function getMediaArray(modelName, modelId) {
 
 async function getMediaUrlList(modelName, modelId) {
     var mediaArray = await getMediaArray(modelName, modelId);
-    if (mediaArray.length == 0) {
+    if (mediaArray.length === 0) {
         return [false, false];
     }
     var urls = [];
@@ -65,7 +64,5 @@ async function getMediaUrlList(modelName, modelId) {
         let url = await getMediaUrl(id);
         urls.push(url);
     }
-    console.log(mediaArray, urls);
-
     return [mediaArray, urls];
 }

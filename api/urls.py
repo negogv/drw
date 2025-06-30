@@ -20,9 +20,11 @@ urlpatterns = [
     path('get/media-array/from-instance/', views.GetMediaArrayFromInst.as_view()),
     # post endpoints
     path('post/user/', views.update_user_endpoint),
+    path('post/username/validate/', views.validate_username_endpoint),
     path('post/vacancy/apply/<int:vacancy_id>/<int:user_id>/', views.apply_for_vac_endpoint),
     path('post/vacancy/<int:vacancy_id>/decline-app/', views.decline_application_endpoint),
     path('post/media/<str:model_name>/<int:model_id>/', views.CreateOneMediaFile.as_view()),
+    path('post/media/many/<str:model_name>/<int:model_id>/', views.CreateManyMediaFiles.as_view()),
 
     path('media/<int:pk>/', views.MediaFileRetrieve.as_view()),
 
