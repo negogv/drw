@@ -5,17 +5,17 @@ DRW
 {% endblock %}
 
 {% block content %}
-  <h1>Log out</h1>
-  <div class="container">
-    <h3 style="text-align: center;">
-      Do you really want to log out?
-    </h3>
-    <div class="d-flex justify-content-center">
-      <form method="POST" style="margin-left: 15px; margin-right: 15px;" action="/api/logout/">
-        {% csrf_token %}
-        <button type="submit" class="btn btn-success">Yes</button>
-      </form>
-      <a href="/api/home/" class="btn btn-danger" style="margin-left: 15px; margin-right: 15px;">No</a>
-    </div>
+<h1>Log out</h1>
+<div class="container">
+  <h3 style="text-align: center;">
+    Do you really want to log out?
+  </h3>
+  <div class="d-flex justify-content-center">
+    <form method="POST" style="margin-left: 15px; margin-right: 15px;" action="/api/logout/">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-success px-5">Yes</button>
+    </form>
+    <a href="/api/home/" class="btn btn-danger px-5" style="margin-left: 15px; margin-right: 15px;">No</a>
   </div>
+</div>
 {% endblock %}

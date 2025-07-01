@@ -139,7 +139,7 @@ class EmployeeRegistrationForm(forms.ModelForm):
                                                         'rows': '5',
                                                         'style': "height: unset;"}),
                            required=False)
-    skills = forms.CharField()
+    skills = forms.CharField(required=False)
     cv = forms.FileField(allow_empty_file=True,
                          required=False,
                          widget=forms.FileInput(attrs={'class': 'form-control-file',
@@ -211,7 +211,7 @@ class NewVacancyForm(forms.ModelForm):
     salary_type = forms.ChoiceField(choices=salary_type_choices,
                                     widget=forms.Select(attrs={'class': 'form-select'}))
     media = forms.CharField(required=False)
-    tags = forms.CharField()
+    tags = forms.CharField(required=False)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

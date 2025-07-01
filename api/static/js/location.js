@@ -22,7 +22,7 @@ const locEvent = new CustomEvent("locChange", {
     ul.className = "list-group border border-secondary border-2";
     ul.id = `${element.name}-list`;
     ul.style =
-        "position: absolute; max-height: 500%; overflow-y: auto; display: none; width: 100%;";
+        "position: absolute; max-height: 500%; overflow-y: auto; display: none; width: 100%; z-index: 10;";
     element.parentElement.appendChild(ul);
 
     const listElement = element.parentElement.children[2];

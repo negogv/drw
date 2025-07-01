@@ -25,6 +25,8 @@ urlpatterns = [
     path('post/vacancy/<int:vacancy_id>/decline-app/', views.decline_application_endpoint),
     path('post/media/<str:model_name>/<int:model_id>/', views.CreateOneMediaFile.as_view()),
     path('post/media/many/<str:model_name>/<int:model_id>/', views.CreateManyMediaFiles.as_view()),
+    # delete endpoints
+    path('delete/<str:model_name>/<int:model_id>/', views.DeleteInstance.as_view()),
 
     path('media/<int:pk>/', views.MediaFileRetrieve.as_view()),
 
@@ -37,6 +39,8 @@ urlpatterns = [
     path('home/', views.HomeView.as_view(), name='home'),
 
     # TODO: would be better to change urls to pattern "object/object_id/action/" instead of "object/action/object_id/
+    path('search/<str:model_name>/', views.search_model_view),
+
     path('company/register/', views.register_company_view, name='register-company'),
     path('company/<company_id>/', views.company_page_view, name='company-page'),
     path('company/edit/<int:company_id>/', views.company_edit_view, name='edit-company'),
@@ -49,7 +53,6 @@ urlpatterns = [
     path('vacancies/', views.vacancies_view, name='all-vacancies'),
     path('vacancy/edit/<int:vacancy_id>/', views.vacancy_edit_view, name='edit-vacancy'),
     path('vacancy/<int:vacancy_id>/manage/', views.manage_vacancy_view, name='manage-vacancy'),
-    path('vacancy/search/', views.VacancyListBySalary.as_view()),
     path('vacancy/<int:vacancy_id>/', views.show_vacancy_view, name='show-vacancy'),
     path('vacancy/new/', views.new_vacancy_view, name='vacancy-company-choice'),
     path('vacancy/new/<int:company_id>/', views.new_vacancy_view, name='new-vacancy'),

@@ -7,7 +7,7 @@ from django.views.generic import TemplateView
 from django.views.decorators.http import require_GET, require_POST
 from django.views.decorators.csrf import csrf_exempt
 from django.db import transaction
-from django.db.models import ManyToManyRel, ManyToManyField
+from django.db.models import ManyToManyRel, ManyToManyField, ObjectDoesNotExist, query
 from django.core.files.base import ContentFile
 from django.core.files.uploadedfile import TemporaryUploadedFile
 from django.contrib.auth.forms import AuthenticationForm
@@ -30,6 +30,7 @@ from .serializers import *
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser, FileUploadParser
 from .forms import RegistrationForm, LoginForm, EmployeeRegistrationForm, CompanyRegistrationForm, NewVacancyForm
 import json
+from abc import ABC, abstractmethod
 import struct
 
 db = mysql.connector.connect(
@@ -179,6 +180,7 @@ class CreateOneMediaFile(APIView):
     parser_classes = (MultiPartParser, FormParser, JSONParser, FileUploadParser)
 
     def post(self, request, **kwargs):
+        # TODO: read func doc
         """
         rewrite to update endpoint (idk do i even need this at all, I doubt that that's rational. Wouldn't it better
         from optimisation point of view to just delete old and create new element?)(like, yeah, it will change image to
@@ -196,7 +198,7 @@ class CreateOneMediaFile(APIView):
         if instance is None:
             return JsonResponse({'error': 'Not Found',
                                  'message': "Instance object isn't found"}, status=404)
-        # TODO: Check if there is already media files, if so, delete them from field and from db at all
+        # TODO: set created media as first in manyToMany field
         media_id = create_mediafile(file_obj)
         instance.media.set([media_id])
         instance.save()
@@ -244,6 +246,19 @@ class MediaFileRetrieve(APIView):
 
 class HomeView(TemplateView):
     template_name = 'index.html'
+
+
+class DeleteInstance(APIView):
+    def delete(self, request, **kwargs):
+        model_name = kwargs['model_name'].capitalize()
+        model_id = kwargs['model_id']
+        try:
+            instance = getattr(api.models, model_name).objects.get(id=model_id)
+            instance.delete()
+            return JsonResponse({}, status=204)
+        except ObjectDoesNotExist:
+            return JsonResponse({'error': 'Not Found',
+                                 'message': "The models wasn't found, change your request"}, status=404)
 
 
 @require_POST
@@ -340,7 +355,8 @@ def get_vacancy_endpoint(request, **kwargs):
                 body.update({field.name: vacancy.serializable_value(field.name)})
         return JsonResponse(body)
     except Vacancy.DoesNotExist:
-        return HttpResponse({}, status=status.HTTP_404_NOT_FOUND)
+        return JsonResponse({'error': 'Not Found',
+                             'message': 'Vacancy instance was not found, change your request'}, status=404)
 
 
 @require_GET
@@ -354,7 +370,7 @@ def get_vac_respondents_endpoint(request, **kwargs):
             body.append(resp_dict)
         return JsonResponse(body, safe=False, status=200)
     except Vacancy.DoesNotExist:
-        return JsonResponse({}, status=204)
+        return JsonResponse({}, status=404)
 
 
 @require_GET
@@ -660,8 +676,7 @@ def show_vacancy_view(request, **kwargs):
     is_owner = False
     if request.user == vacancy.owner.user:
         is_owner = True
-    return render(request, 'vacancy/show-vacancy.html', {'vacancy_id': kwargs['vacancy_id'],
-                                                         'is_owner': is_owner})
+    return render(request, 'vacancy/show-vacancy.html', {'is_owner': is_owner})
 
 
 @login_required
@@ -677,11 +692,13 @@ def vacancy_edit_view(request, **kwargs):
     if request.method == 'POST':
         form = NewVacancyForm(request.POST)
         if form.is_valid():
-            tags = form.cleaned_data.pop('tags').split('-')
-            vacancy.tags.set(tags)
+            tag_str = form.cleaned_data.pop('tags')
             form.cleaned_data.pop('media')
             Vacancy.objects.update_or_create(id=vacancy.id, defaults=form.cleaned_data)
-            return redirect('home')
+            if tag_str.__len__() > 0:
+                tags = tag_str.split('-')
+                vacancy.tags.set(tags)
+            return redirect('show-vacancy', vacancy_id=vacancy.id)
         else:
             messages.error(request, form.errors)
     else:
@@ -726,6 +743,55 @@ def manage_vacancy_view(request, **kwargs):
             messages.error(request, 'You can not access this page')
             return redirect('home')
         return render(request, 'vacancy/manage-vacancy.html', {'vacancyId': kwargs['vacancy_id']})
+
+
+def search_instances(request: Request, objects: query.QuerySet):
+    params = {'state': '',
+              'city': ''}
+    for key, value in request.POST.dict().items():
+        params.update({key: value})
+    filtered_inst = objects.filter(
+        country__icontains=params['country']).filter(
+        state__icontains=params['state']).filter(
+        city__icontains=params['city'])
+    if 'min-salary' in params and params['min-salary'] != '':
+        filtered_inst = filtered_inst.filter(salary__gte=params['min-salary'])
+    if 'max-salary' in params and params['max-salary'] != '':
+        filtered_inst = filtered_inst.filter(salary__lte=params['max-salary'])
+    if 'tags' in params and params['tags'] != '':
+        tags = params['tags'].split('-')
+        filtered_inst = filtered_inst.filter(tags__in=tags)
+    if 'skills' in params and params['skills'] != '':
+        tags = params['skills'].split('-')
+        filtered_inst = filtered_inst.filter(skills__in=tags)
+    filter_text = filtered_inst.filter(text__icontains=params['text_search'])
+    try:
+        filtered_inst = filtered_inst.filter(title__icontains=params['text_search'])
+    except:
+        filtered_inst = filtered_inst.filter(name__icontains=params['text_search'])
+    filtered_inst = filtered_inst.union(filter_text)
+    return filtered_inst
+
+
+def search_model_view(request: Request, **kwargs):  # TODO: search salary by currency
+    model_name = kwargs['model_name'].capitalize()
+    if request.method == 'POST':
+        objects = getattr(api.models, model_name).objects.all()
+        filtered_inst = search_instances(request, objects)
+
+        body = []
+        for instance in filtered_inst:
+            inst_dict = model_to_dict(instance, exclude=['media', 'respondents', 'tags', 'cv', 'skills'])
+            if hasattr(instance, 'tags'):
+                inst_dict['owner'] = instance.owner.name
+                inst_dict.update({'tags': [tag.name for tag in instance.tags.all()]})
+                inst_dict['currency'] = Currency.objects.get(id=inst_dict['currency']).name
+            elif hasattr(instance, 'skills'):
+                inst_dict.update({'skills': [skill.name for skill in instance.skills.all()]})
+            body.append(inst_dict)
+        return JsonResponse(body, safe=False, status=200)
+    else:
+        return render(request, f'search/search-{model_name}.html')
 
 
 @login_required
@@ -835,18 +901,8 @@ def employee_edit_view(request, **kwargs):
                                                            'manyToManyFields': manyToManyFields })
 
 
-def test_view(request):  # testing searching algorithm
-    if request.method == 'POST':
-        response = requests.request(method='get', url='http://127.0.0.1:8000/api/test',
-                                    params={'colors': ['red', 'green', 'blue']})
-        return response
-    elif request.method == 'GET':
-        params = dict(request.GET)
-        print(params['colors'])  # params == {'colors': ['red', 'green', 'blue']}
-        return render(request, '/api/test/')
-    else:
-        return HttpResponse(request)
-        # return HttpResponse(request.GET)
+def test_view(request):
+    pass
 
 
 def test_slash_view(request):

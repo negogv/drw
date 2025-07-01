@@ -1,0 +1,115 @@
+{% extends 'base.html' %}
+
+{% block title %}
+DRW
+{% endblock %}
+
+{% block content %}
+
+<div id="searchDiv">
+    <div class="d-flex flex-fill border-bottom border-secondary mb-3">
+        <h2>
+            Search for vacancies
+        </h2>
+    </div>
+    <form action="/api/search/vacancy/" method="POST">
+        {% csrf_token %}
+        <input type="text" id="searchInput" name="text_search" class="form-control" placeholder="Search">
+        <div class="bg-light rounded-3 mx-4 p-3 my-4">
+            <div class="my-1">
+                <div class="fs-5">
+                    <label for="country-input">Country:</label>
+                </div>
+                <input type="text" name="country" class="form-select" id="country-input" autocomplete="off"
+                    placeholder="Select a country">
+            </div>
+            <div class="my-1">
+                <div class="fs-5">
+                    <label for="state-input">State:</label>
+                </div>
+                <input type="text" value="" name="state" class="form-select" id="state-input" autocomplete="off"
+                    placeholder="Select a state">
+            </div>
+            <div class="my-1">
+                <div class="fs-5">
+                    <label for="city-input">City:</label>
+                </div>
+                <input type="text" value="" name="city" class="form-select" id="city-input" autocomplete="off"
+                    placeholder="Select a city">
+            </div>
+            <div id="tagsInputDiv" hidden>
+                <input type="text" name="tags" id="id_tags">
+            </div>
+            <div id="tagSearchDiv" class="my-1">
+                <label class="fs-5" for="skill-input">Skills:</label>
+                <div class="border border-dark-subtle border-1 d-flex p-2 rounded-4 mb-2" id="selected-skills">
+                    <span class="text-muted">Nothing is selected</span>
+                    <!-- <button class="btn btn-outline-secondary rounded-pill">Python</button> -->
+                </div>
+                <input type="text" class="form-select" id="skill-input" autocomplete="off"
+                    placeholder="Select required or recomendated skills">
+                <ul class="list-group border border-secondary border-2" id="skills-list"
+                    style="position: absolute; max-height: 150%; overflow-y: auto; display: none; width: 100%; z-index: 10;">
+                    <!--  -->
+                </ul>
+            </div>
+            <div class="row my-1">
+                <span class="fs-5" style="text-align: center;">Salary range</span>
+                <div class="my-1 col">
+                    <input type="number" name="min-salary" class="form-control" id="minSalary" autocomplete="off"
+                        placeholder="Min salary">
+                </div>
+                <div class="my-1 col">
+                    <input type="number" name="max-salary" class="form-control" id="minSalary" autocomplete="off"
+                        placeholder="Max salary">
+                </div>
+            </div>
+        </div>
+        <button class="btn btn-outline-success mb-4 w-100" type="submit">Submit</button>
+    </form>
+</div>
+<div id="resultDiv">
+    <div class="d-flex flex-fill border-bottom border-secondary mb-3">
+        <h2>Founded vacancies</h2>
+    </div>
+</div>
+
+<!-- {{ vacancyId|json_script:"vacancyId" }} -->
+
+{% load static %}
+<script>
+    const csrfToken = document.querySelector("[name=csrfmiddlewaretoken]").value;
+</script>
+<script src="{% static 'js/alert.js' %}"></script>
+<script src="{% static 'js/search-skills.js' %}"></script>
+<script src="{% static 'js/location.js' %}"></script>
+<script src="{% static 'js/search-model.js' %}"></script>
+<script>
+    function displaySearchResult(data) {
+        resultDiv.innerHTML = "";
+        for (let vacancy of data) {
+            resultDiv.insertAdjacentHTML(
+                "beforeend",
+                `<div class="card p-3 m-2">
+                <h4>${vacancy.title}</h4>
+                <span class="my-2">Location: ${vacancy.city}, ${vacancy.state}, ${vacancy.country}</span>
+                <span class="my-2">Company: ${vacancy.owner}</span>
+                <span class="my-2">Salary: ${vacancy.salary} ${vacancy.currency} for ${vacancy.salary_type}</span>
+                <span class="my-1">Tags:</span>
+                <div id="tags${vacancy.id}" class="my-1"></div>
+                <a class="link-underline link-underline-opacity-0 stretched-link"
+                    href="/api/vacancy/${vacancy.id}/">
+                </a>
+            </div>`
+            );
+            let tagsDiv = document.getElementById(`tags${vacancy.id}`);
+            for (let tag of vacancy.tags) {
+                tagsDiv.insertAdjacentHTML(
+                    "beforeend",
+                    `<span class="badge rounded-pill text-bg-secondary m-1 fs-6">${tag}</span>`
+                );
+            }
+        }
+    }
+</script>
+{% endblock %}

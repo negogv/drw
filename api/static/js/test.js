@@ -68,3 +68,27 @@ fetch("http://127.0.0.1:8000/api/post/media/", {
 }).then((response) => {
     console.log(response);
 });
+
+<script>
+    skillsList.style.removeProperty('display');
+    const skillsListRect = skillsList.getBoundingClientRect();
+    const absoluteSkillsBottom = skillsListRect.bottom + window.pageYOffset;
+    skillsList.style.display = 'none';
+
+    const observer = new MutationObserver((mutationList, observer) => {
+        for (const mutation of mutationList) {
+            if (mutation.type === "attributes") {
+                window.scrollTo({
+                    top: absoluteSkillsBottom,
+                    behavior: 'smooth'
+                });
+                console.log(mutation.attributeName)
+                console.log(mutation)
+            }
+        }
+    });
+
+    const observeConfig = { attributes: true };
+
+    observer.observe(skillsList, observeConfig);
+</script>

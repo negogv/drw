@@ -2,6 +2,7 @@ var title,
     // csrfToken,
     editBtn,
     manageBtn,
+    delBtn,
     locationP,
     owner,
     ownerEmail,
@@ -13,11 +14,13 @@ var title,
     applyBtn;
 
 const vacancyId = window.location.href.match(/(?<=vacancy\/)\d+/)[0];
+var companyId;
 
 document.addEventListener("DOMContentLoaded", async function () {
     title = document.querySelector("h1");
     editBtn = document.getElementById("editBtn");
     manageBtn = document.getElementById("manageBtn");
+    delBtn = document.getElementById("delBtn");
     locationP = document.getElementById("location");
     owner = document.getElementById("owner");
     ownerEmail = document.getElementById("owner-email");
@@ -28,6 +31,8 @@ document.addEventListener("DOMContentLoaded", async function () {
     applyBtn = document.querySelector(".btn-success");
     const mediaDiv = document.getElementById("media");
     // csrfToken = document.querySelector("[name=csrfmiddlewaretoken]").value;
+
+    console.log("start loading | before get/vacancy");
 
     let vacancy = await fetch(`/api/get/vacancy/${vacancyId}/`, {
         method: "GET",
@@ -83,10 +88,10 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     title.innerText = vacancy.title;
     if (editBtn) {
-        editBtn.href = `/api/vacancy/edit/${vacancyId}`;
-    }
-    if (manageBtn) {
+        editBtn.href = `/api/vacancy/edit/${vacancyId}/`;
         manageBtn.href = `/api/vacancy/${vacancyId}/manage/`;
+        delBtn.addEventListener("click", deleteVacancy);
+        companyId = company.id;
     }
     locationP.innerText = vacancy.city + ", " + vacancy.country;
     owner.innerText = company.name;
@@ -141,5 +146,28 @@ async function applyForVac(button) {
         .catch((error) => {
             console.error("Fetch completely failed:", error);
         });
-    console.log(applied);
+}
+
+async function deleteVacancy() {
+    await fetch(`/api/delete/vacancy/${vacancyId}/`, {
+        method: "DELETE",
+        headers: {
+            "X-CSRFToken": csrfToken,
+        },
+    })
+        .then((response) => {
+            console.log(response.status);
+
+            if (response.status == 204) {
+                window.location.assign(`/api/company/${companyId}/`);
+            } else {
+                return response.json().then((errorData) => {
+                    throw errorData;
+                });
+            }
+        })
+        .catch((error) => {
+            console.error(error);
+            return;
+        });
 }

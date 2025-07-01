@@ -94,29 +94,6 @@
 <script src="{% static 'js/retrieve-media.js' %}"></script>
 <script src="{% static 'js/upload-media.js' %}"></script>
 <script>
-    skillsList.style.removeProperty('display');
-    const skillsListRect = skillsList.getBoundingClientRect();
-    const absoluteSkillsBottom = skillsListRect.bottom + window.pageYOffset;
-    skillsList.style.display = 'none';
-
-    const observer = new MutationObserver((mutationList, observer) => {
-        for (const mutation of mutationList) {
-            if (mutation.type === "attributes") {
-                window.scrollTo({
-                    top: absoluteSkillsBottom,
-                    behavior: 'smooth'
-                });
-                console.log(mutation.attributeName)
-                console.log(mutation)
-            }
-        }
-    });
-
-    const observeConfig = { attributes: true };
-
-    observer.observe(skillsList, observeConfig);
-</script>
-<script>
     const vacancyId = window.location.href.match(/(?<=edit\/)\d+/)[0];  // change if url will be changed
     const mediaDiv = document.getElementById('media');
 

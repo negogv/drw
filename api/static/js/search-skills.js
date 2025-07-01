@@ -10,7 +10,6 @@ if (manyToManyFields) {
     data = JSON.parse(manyToManyFields.textContent);
     tagsInput.value = ""; // clear the tags input to avoid errors
     let tags = data.tags || data.skills;
-    console.log(tags);
 
     if (tags.length !== 0) {
         selectedSkills.innerHTML = "";
@@ -47,11 +46,11 @@ skillInput.addEventListener("keyup", function () {
 document
     .querySelector("form")
     .addEventListener("submit", async function (event) {
-        event.preventDefault();
+        // event.preventDefault();
         tagsInput.value = await tagsInput.value.slice(0, -1);
-        form = document.querySelector("form");
-        form.submit();
-        return true;
+        // form = document.querySelector("form");
+        // form.submit();
+        // return true;
     });
 
 window.addEventListener("pageshow", function (event) {
@@ -101,7 +100,7 @@ function addSkill(button) {
 function delSkill(button) {
     event.preventDefault();
 
-    tagsInput.value.replace(button.id, "");
+    tagsInput.value = tagsInput.value.replace(button.id + "-", "");
 
     const option = document.createElement("li");
     option.className = "list-group-item skill";
