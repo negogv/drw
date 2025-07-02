@@ -74,7 +74,7 @@ DRW
         <input type="text" class="form-select" id="skill-input" autocomplete="off" name="skill"
             placeholder="Select required or recomendated skills">
         <ul class="list-group border border-secondary" id="skills-list"
-            style="position: absolute; max-height: 100%; overflow-y: auto; display: none; width: 100%;">
+            style="position: absolute; max-height: 200%; overflow-y: auto; display: none; width: 100%;">
             <!--  -->
         </ul>
     </div>
@@ -87,11 +87,18 @@ DRW
         {{ form.text }}
     </div>
 
-    <div hidden>
-        {% if form.skills %}
-        {{ form.skills }}
-        {% endif %}
+    {% if form.skills %}
+    <div>
+        <label for="cv-input" class="fs-5">Upload your CV</label>
+        <input type="file" class="form-control" id="cvInput" name="cv-input"
+            accept="application/pdf, text/plain, application/msword">
     </div>
+
+    <div hidden>
+        {{ form.skills }}
+        {{ form.cv }}
+    </div>
+    {% endif %}
     <div hidden>
         {{ form.media }}
     </div>
@@ -109,6 +116,7 @@ DRW
 <script>
     const csrfToken = document.querySelector("[name=csrfmiddlewaretoken]").value;
 </script>
+<script src="{% static 'js/alert.js' %}"></script>
 {% if form.skills %}
 <script src="{% static 'js/search-skills.js' %}"></script>
 {% endif %}
@@ -116,19 +124,32 @@ DRW
 <script src="{% static 'js/edit-page.js' %}"></script>
 <script src="{% static 'js/location.js' %}"></script>
 <script>
+    const submitHandlers = [];
+    const cvId = document.getElementById("id_cv");
+    const mediaIdInput = document.getElementById("id_media");
     document.addEventListener("DOMContentLoaded", async function () {
+        document.querySelector("form").addEventListener("submit", async function (event) {
+            event.preventDefault()
+            await Promise.all(submitHandlers.map(func => func()));
+
+            document.querySelector("form").submit()
+        })
+
         const modelId = document.getElementById('modelId').textContent;
         const modelName = document.getElementById('modelName').textContent;
 
-        const [mediaArray, mediaUrls] = await getMediaUrlList(modelName, modelId);
-        if (mediaArray && mediaUrls) {
-            mediaIdInput.value = mediaArray[0];
+        if (modelId && modelName) {
+            const [mediaArray, mediaUrls] = await getMediaUrlList(modelName, modelId);
+            if (mediaArray && mediaUrls) {
+                mediaIdInput.value = mediaArray[0];
 
-            let profilePic = document.getElementById('profilePic');
-            profilePic.parentElement.style.display = "flex";
-            profilePic.src = mediaUrls[0];
+                let profilePic = document.getElementById('profilePic');
+                profilePic.parentElement.style.display = "flex";
+                profilePic.src = mediaUrls[0];
+            }
         }
     });
 </script>
 <script src="{% static 'js/upload-media.js' %}"></script>
+<script src="{% static 'js/cv.js' %}"></script>
 {% endblock %}

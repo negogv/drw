@@ -4,27 +4,27 @@
             <p class="nav-item mb-0 me-5">© DerRoteWaschbär</p>
         </div>
         <div class="d-flex align-items-center justify-content-center">
-            <a href="/api/home/" class="navbar-brand bd-highlight">
+            <a href="/home/" class="navbar-brand bd-highlight">
                 DRW
             </a>
         </div>
         <ul class="nav navbar-nav justify-content-end" style="flex-direction: row;">
             {% if user.is_authenticated %}
             {% if user.role == 'employee' %}
-            <li class="nav-item"><a href="/api/logout/" class="nav-link px-2">Log out</a></li>
-            <li class="nav-item"><a href="/api/employee/me/" class="nav-link px-2">Employee
+            <li class="nav-item"><a href="/logout/" class="nav-link px-2">Log out</a></li>
+            <li class="nav-item"><a href="/employee/me/" class="nav-link px-2">Employee
                     profile</a></li>
-            <li class="nav-item"><a href="/api/profile/" class="nav-link px-2 ">Acccount</a></li>
+            <li class="nav-item"><a href="/profile/" class="nav-link px-2 ">Acccount</a></li>
             {% elif user.role == 'company' %}
-            <li class="nav-item"><a href="/api/logout/" class="nav-link px-2 ">Log out</a></li>
-            <li class="nav-item"><a href="/api/company/me/" class="nav-link px-2 ">My
+            <li class="nav-item"><a href="/logout/" class="nav-link px-2 ">Log out</a></li>
+            <li class="nav-item"><a href="/company/me/" class="nav-link px-2 ">My
                     companies</a>
             </li>
-            <li class="nav-item"><a href="/api/profile/" class="nav-link px-2 ">Acccount</a></li>
+            <li class="nav-item"><a href="/profile/" class="nav-link px-2 ">Acccount</a></li>
             {% endif %}
             {% else %}
-            <li class="nav-item"><a href="/api/login/" class="nav-link px-2 ">Log in</a></li>
-            <li class="nav-item"><a href="/api/register/" class="nav-link px-2 ">Register</a>
+            <li class="nav-item"><a href="/login/" class="nav-link px-2 ">Log in</a></li>
+            <li class="nav-item"><a href="/register/" class="nav-link px-2 ">Register</a>
             </li>
             {% endif %}
         </ul>

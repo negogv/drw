@@ -19,8 +19,9 @@ DRW
         </div>
         <div class="d-flex">
             {% if is_owner == True %}
-            <a class="btn btn-outline-primary flex-fill" href="/api/employee/edit/{{ employee.id }}">Edit
+            <a class="btn btn-outline-primary flex-fill mx-1" href="/employee/edit/{{ employee.id }}">Edit
                 profile</a>
+            <button class="btn btn-outline-danger flex-fill mx-1" onclick="deleteEmployee()">Delete profile</button>
             {% endif %}
         </div>
         <div class="row d-flex justify-content-between">
@@ -39,20 +40,25 @@ DRW
             </div>
         </div>
     </div>
+    {% if employee.text %}
     <div id="employee-description">
         <h4>Description: </h4>
         <p>
             {{ employee.text|linebreaks }}
         </p>
     </div>
-    <div id="cv of the employee">
-        <!-- tbh idk how cv will work -->
-        {% if employee.cv %}
-        <h4>
-            {{ employee.first_name }}'s CV
-        </h4>
-        {{ employee.cv }}
+    {% endif %}
+    <div id="skillsDiv" class="mb-3">
+        {% if employee.skills.all %}
+        <h4>Skills: </h4>
         {% endif %}
+
+        {% for skill in employee.skills.all %}
+        <a class="btn btn-info" href="/employee/search/"> {{ skill.name }} </a>
+        {% endfor %}
+    </div>
+    <div>
+        <button class="btn btn-outline-secondary" id="downloadCVBtn">Download employee's CV</button>
     </div>
 </div>
 
@@ -62,9 +68,31 @@ DRW
 <script>
     const csrfToken = document.querySelector("[name=csrfmiddlewaretoken]").value;
 </script>
-<script src="{% static 'js/retrieve-media.js' %}">
-</script>
+<script src="{% static 'js/retrieve-media.js' %}"></script>
+<script src="{% static 'js/cv.js' %}"></script>
 <script>
+    async function deleteEmployee() {
+        const modelId = document.getElementById('modelId').textContent;
+        await fetch(`/delete/employee/${modelId}/`, {
+            method: "DELETE",
+            headers: {
+                "X-CSRFToken": csrfToken,
+            },
+        })
+            .then((response) => {
+                if (response.status == 204) {
+                    window.location.assign(`/employee/register/`);
+                } else {
+                    return response.json().then((errorData) => {
+                        throw errorData;
+                    });
+                }
+            })
+            .catch((error) => {
+                console.error(error);
+                return;
+            });
+    }
     async function loadMedia() {
         const modelId = document.getElementById('modelId').textContent;
         const [mediaArray, mediaUrls] = await getMediaUrlList('employee', modelId);

@@ -46,11 +46,7 @@ skillInput.addEventListener("keyup", function () {
 document
     .querySelector("form")
     .addEventListener("submit", async function (event) {
-        // event.preventDefault();
         tagsInput.value = await tagsInput.value.slice(0, -1);
-        // form = document.querySelector("form");
-        // form.submit();
-        // return true;
     });
 
 window.addEventListener("pageshow", function (event) {
@@ -61,7 +57,7 @@ window.addEventListener("pageshow", function (event) {
 });
 
 async function loadSkillsList() {
-    await fetch("/api/get/skills/all/", {
+    await fetch("/get/skills/all/", {
         method: "GET",
         headers: {
             "X-CSRFToken": csrfToken,

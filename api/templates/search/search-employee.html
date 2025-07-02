@@ -12,7 +12,7 @@ DRW
             Search for employees
         </h2>
     </div>
-    <form action="/api/search/employee/" method="POST">
+    <form action="/search/employee/" method="POST">
         {% csrf_token %}
         <input type="text" id="searchInput" name="text_search" class="form-control" placeholder="Search">
         <div class="bg-light rounded-3 mx-4 p-3 my-4">
@@ -85,7 +85,7 @@ DRW
                 <span class="my-1">Skills:</span>
                 <div id="tags${employee.id}" class="my-1"></div>
                 <a class="link-underline link-underline-opacity-0 stretched-link"
-                    href="/api/employee/${employee.id}/">
+                    href="/employee/${employee.id}/">
                 </a>
             </div>`
             );

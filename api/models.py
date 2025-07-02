@@ -50,10 +50,10 @@ class Currency(models.Model):
         return self.name
 
 
-class Company(models.Model):       # TODO: Maybe add blank=True to unnecessary fields?
+class Company(models.Model):
     id = models.AutoField(primary_key=True)
     user = models.ForeignKey(TheUser, on_delete=models.CASCADE)
-    name = models.CharField(max_length=250, unique=True)
+    name = models.CharField(max_length=250)
     phone = models.CharField(max_length=20)
     email = models.EmailField("email address")
     country = models.CharField(max_length=250)
@@ -79,7 +79,7 @@ class Employee(models.Model):
     email = models.EmailField("email address")
     text = models.TextField(max_length=400, null=True)
     media = models.ManyToManyField('MediaFile')
-    cv = models.FileField(null=True, editable=True)
+    cv = models.ForeignKey("CV", on_delete=models.SET_NULL, null=True)
     skills = models.ManyToManyField(Skill)
     created = models.DateTimeField(auto_now_add=True)
 
@@ -114,26 +114,19 @@ class Vacancy(models.Model):
         return self.title
 
 
-# class VacancyFeedback(models.Model):  # TODO: Fuck this shit
-#     id = models.AutoField(primary_key=True)
-#     owner = models.ForeignKey(Company, on_delete=models.CASCADE)
-#     vacancy = models.ForeignKey(Vacancy, on_delete=models.CASCADE)
-#     feedback_type = models.CharField(max_length=30)
-#     file = models.BinaryField(null=True)
-#     text = models.TextField(null=True)
-#     created = models.DateTimeField(auto_now_add=True)
-#
-#     def __str__(self):
-#         return self.vacancy
+class CV(models.Model):
+    id = models.AutoField(primary_key=True)
+    binary = models.BinaryField()
+    name = models.CharField(max_length=250)
+
+    def __str__(self):
+        return self.name
 
 
 class MediaFile(models.Model):
     id = models.AutoField(primary_key=True)
     binary = models.BinaryField()
     name = models.CharField(max_length=250)
-    # TODO:  the concept is next: save image to temporary dir, convert image to bytes and save to BLOB,
-    # TODO:  delete the image. Media_name stays for media name even it is ImageField
-    # FIXME:        WOW THERE IS NO FUCKING NEED IN IT, JUST KEEP IT
 
     def __str__(self):
         return self.name

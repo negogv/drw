@@ -30,7 +30,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     companyCardsDiv = document.getElementById("company-cards");
     csrfToken = document.querySelector("[name=csrfmiddlewaretoken]").value;
 
-    await fetch(`/api/get/user/data/${userId}`, {
+    await fetch(`/get/user/data/${userId}`, {
         method: "GET",
         headers: {
             "X-CSRFToken": csrfToken,
@@ -53,13 +53,13 @@ document.addEventListener("DOMContentLoaded", async function () {
             roleNameEl.innerText =
                 data.role.charAt(0).toUpperCase() + data.role.slice(1);
             role = data.role;
-            rolePageLink.href = `/api/${data.role}/me/`;
+            rolePageLink.href = `/${data.role}/me/`;
             return;
         })
         .catch((error) => {
             console.error("Fetch completely failed:", error);
         });
-    await fetch(`/api/get/profile/vacancies/${role}/${userId}/`, {
+    await fetch(`/get/profile/vacancies/${role}/${userId}/`, {
         method: "GET",
         headers: {
             "X-CSRFToken": csrfToken,
@@ -81,11 +81,11 @@ document.addEventListener("DOMContentLoaded", async function () {
                     vacanciesDiv.insertAdjacentHTML(
                         // add "Cancel application" button
                         "beforeend",
-                        `<div class="card p-3">
+                        `<div class="card p-3 my-1">
                             <h4>${vac.title}</h4>
                             <p>${vac.location}</p>
                             <a class="badge rounded-pill text-bg-dark link-underline link-underline-opacity-0 stretched-link"
-                                href="/api/company/${vac.companyId}">
+                                href="/company/${vac.companyId}">
                                 ${vac.companyName}
                             </a>
                         </div>`
@@ -97,15 +97,15 @@ document.addEventListener("DOMContentLoaded", async function () {
                     vacanciesDiv.insertAdjacentHTML(
                         // add "Cancel application" button
                         "beforeend",
-                        `<div class="card p-3">
+                        `<div class="card p-3 my-1">
                             <h4>${vac.companyName}</h4>
                             <p>Number of vacancies: ${vac.vacanciesNum}</p>
                             <p>Unanswered responses: ${vac.responseNum}</p>
                             <a class="link-underline link-underline-opacity-0 stretched-link"
-                                href="/api/company/${vac.companyId}">
+                                href="/company/${vac.companyId}">
                                 
                             </a>
-                        </div>` // TODO: change the link to "manage vacancy link"
+                        </div>`
                     );
                     rolePageLink.style.display = "none";
                     companiesDiv.style.removeProperty("display");
@@ -115,7 +115,7 @@ document.addEventListener("DOMContentLoaded", async function () {
                             <h4>${vac.companyName}</h4>
                             <p>Location: ${vac.companyLocation}</p>
                             <a class="link-underline link-underline-opacity-0 stretched-link"
-                                href="/api/company/${vac.companyId}">
+                                href="/company/${vac.companyId}">
                             </a>
                         </div>`
                     );
@@ -158,7 +158,7 @@ async function submitEditNames(form) {
     let lastName = form.children[3].value || "";
 
     let body = { id: userId, first_name: firstName, last_name: lastName };
-    await fetch(`/api/post/user/`, {
+    await fetch(`/post/user/`, {
         method: "POST",
         body: JSON.stringify(body),
         headers: {
@@ -215,7 +215,7 @@ async function submitContact(form) {
 
     let bodyObj = { id: userId, email: emailNew, phone: phoneNew };
     let body = JSON.stringify(bodyObj);
-    await fetch(`/api/post/user/`, {
+    await fetch(`/post/user/`, {
         method: "POST",
         body: body,
         headers: {

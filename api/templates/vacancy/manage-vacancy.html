@@ -8,17 +8,21 @@ DRW
 
 <div name="vacancy-info">
     <h1 style="text-align: center;" id="vacancyTitle">
-        <!-- Title of the vacancy -->
     </h1>
-    <!-- <div>
-        <h2>Location:</h2>
-        <p id="location"></p>
-        <h3 id="isRemote"></h3>
-    </div> -->
+    <div class="d-flex justify-content-center">
+        <a href="/vacancy/{{ vacancyId }}" class="btn btn-outline-primary w-50">Show vacancy</a>
+    </div>
+    <div class="my-2">
+        <h3>Location:</h3>
+        <p id="vacancyLoc"></p>
+    </div>
+    <div class="my-2">
+        <h3>Descriprion:</h3>
+        <p id="vacancyText"></p>
+    </div>
     <div id="tags">
         <h3>Tags:</h3>
         <div id="vacancyTagsDiv" class="mt-2">
-            <!-- tag buttons. href to "search vacancy by this tag"  -->
         </div>
     </div>
 </div>

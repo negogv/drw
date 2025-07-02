@@ -10,48 +10,48 @@
                 {% if user.role == 'employee' %}
                 <div class="d-flex flex-row align-items-center">
                     <li class="nav-item">
-                        <a class="nav-link" href="/api/profile/">My profile</a>
+                        <a class="nav-link" href="/profile/">My profile</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="/api/employee/me/">My employee profile</a>
+                        <a class="nav-link" href="/employee/me/">My employee profile</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="/api/search/vacancy/">Search vacancies</a>
+                        <a class="nav-link" href="/search/vacancy/">Search vacancies</a>
                     </li>
                 </div>
                 <div>
                     <li class="p-3">
-                        <a class="btn btn-outline-secondary" href="/api/logout/">Log out</a>
+                        <a class="btn btn-outline-secondary" href="/logout/">Log out</a>
                     </li>
                 </div>
                 {% elif user.role == 'company' %}
                 <div class="d-flex flex-row align-items-center">
                     <li class="nav-item">
-                        <a class="nav-link" href="/api/profile/">Personal info</a>
+                        <a class="nav-link" href="/profile/">Personal info</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="/api/company/me/">My companies</a>
+                        <a class="nav-link" href="/company/me/">My companies</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="/api/search/employee/">Search employees</a>
+                        <a class="nav-link" href="/search/employee/">Search employees</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="/api/search/vacancy/">Search vacancies</a>
+                        <a class="nav-link" href="/search/vacancy/">Search vacancies</a>
                     </li>
                 </div>
                 <div>
                     <li class="p-3">
-                        <a class="btn btn-outline-secondary" href="/api/logout/">Log out</a>
+                        <a class="btn btn-outline-secondary" href="/logout/">Log out</a>
                     </li>
                 </div>
                 {% endif %}
                 {% else %}
                 <div class="d-flex flex-row align-items-center">
                     <li class="nav-item">
-                        <a class="nav-link" href="/api/register/">Register</a>
+                        <a class="nav-link" href="/register/">Register</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="/api/login/">Log in</a>
+                        <a class="nav-link" href="/login/">Log in</a>
                     </li>
                 </div>
                 {% endif %}

@@ -18,12 +18,15 @@ DRW
             </div>
             {% if is_owner == True %}
             <div class="d-flex align-items-center">
-                <a style="width: 100%;" class="btn btn-outline-primary my-2"
-                    href="/api/company/edit/{{ company.id }}">Edit
+                <a style="width: 70%;" class="btn btn-outline-primary my-2 mx-1"
+                    href="/company/edit/{{ company.id }}">Edit
                     company profile</a>
+                <button style="width: 30%;" class="btn btn-outline-danger my-2 mx-1" onclick="deleteInstance()">Delete
+                    company</button>
             </div>
             {% endif %}
-            <div class="row d-flex justify-content-between">
+            <div
+                class="row d-flex justify-content-between border-top border-bottom border-1 border-secondary pt-3 my-2">
                 <p>
                     <b>City: </b>
                     {{ company.city }},
@@ -42,6 +45,7 @@ DRW
             </div>
         </div>
         <div id="company-description">
+            <h4>Descriprion</h4>
             <p>
                 {{ company.text|linebreaks }}
             </p>
@@ -50,7 +54,7 @@ DRW
             <h4>Vacancies of this company</h4>
             <div>
                 {% for vacancy in vacancies %}
-                <a class="btn btn-dark" style="margin: 3px;" href="/api/vacancy/{{ vacancy.id }}">
+                <a class="btn btn-dark" style="margin: 3px;" href="/vacancy/{{ vacancy.id }}">
                     {{ vacancy.title }}
                 </a>
                 {% empty %}
@@ -60,7 +64,7 @@ DRW
                 {% endfor %}
             </div>
             {% if is_owner == True %}
-            <a style="margin-top: 8px;" class="btn btn-success" href="/api/vacancy/new/{{ company.id }}">
+            <a style="margin-top: 8px;" class="btn btn-success" href="/vacancy/new/{{ company.id }}">
                 Create new vacancy
             </a>
             {% endif %}
@@ -77,6 +81,30 @@ DRW
 <script src="{% static 'js/retrieve-media.js' %}">
 </script>
 <script>
+    async function deleteInstance() {
+        let modelId = document.getElementById("modelId").textContent;
+        await fetch(`/delete/company/${modelId}/`, {
+            method: "DELETE",
+            headers: {
+                "X-CSRFToken": csrfToken,
+            },
+        })
+            .then((response) => {
+                console.log(response.status);
+
+                if (response.status == 204) {
+                    window.location.assign(`/company/me/`);
+                } else {
+                    return response.json().then((errorData) => {
+                        throw errorData;
+                    });
+                }
+            })
+            .catch((error) => {
+                console.error(error);
+                return;
+            });
+    }
     async function loadMedia() {
         const modelId = document.getElementById('modelId').textContent;
         const [mediaArray, mediaUrls] = await getMediaUrlList('company', modelId);

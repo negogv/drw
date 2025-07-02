@@ -1,13 +1,15 @@
-var vacancyTitle = document.getElementById("vacancyTitle"),
+const vacancyTitle = document.getElementById("vacancyTitle"),
+    vacancyLoc = document.getElementById("vacancyLoc"),
+    vacancyText = document.getElementById("vacancyText"),
     vacancyTagsDiv = document.getElementById("vacancyTagsDiv"),
     respondentsCards = document.getElementById("respondentsCards"),
-    employeeSkills,
-    csrfToken = document.querySelector("[name=csrfmiddlewaretoken]").value;
+    csrfToken = document.querySelector("[name=csrfmiddlewaretoken]").value,
+    vacancyId = JSON.parse(document.getElementById("vacancyId").textContent);
 
-const vacancyId = JSON.parse(document.getElementById("vacancyId").textContent);
+var employeeSkills;
 
 document.addEventListener("DOMContentLoaded", async function () {
-    await fetch(`/api/get/vacancy/${vacancyId}/`, {
+    await fetch(`/get/vacancy/${vacancyId}/`, {
         method: "GET",
         headers: {
             "X-CSRFToken": csrfToken,
@@ -17,10 +19,13 @@ document.addEventListener("DOMContentLoaded", async function () {
         .then((Response) => Response.json())
         .then((data) => {
             vacancyTitle.innerText = data.title;
+            vacancyLoc.innerText = data.city + ", " + data.country;
+            vacancyText.innerText = data.text;
+
             for (tag of data.tags) {
                 vacancyTagsDiv.insertAdjacentHTML(
                     "beforeend",
-                    `<a class="badge rounded-pill text-bg-dark link-underline link-underline-opacity-0 me-1 mb-1 fs-4" href="#">${tag.name}</a>`
+                    `<span class="badge rounded-pill text-bg-dark link-underline link-underline-opacity-0 me-1 mb-1 fs-5">${tag.name}</span>`
                 );
             }
             for (resp of data.respondents) {
@@ -32,7 +37,7 @@ document.addEventListener("DOMContentLoaded", async function () {
                     </div>
                     <div class="p-3 row card-body">
                         <div class="col col-10">
-                            <p id="employeeLocation"><b>Location: </b>${resp.location}</p>
+                            <p id="employeeLocation"><b>Location: </b>${resp.city}, ${resp.country}</p>
                             <p id="employeeEmail"><b>Email: </b>${resp.email}</p>
                             <p id="employeePhone"><b>Phone: </b>${resp.phone}</p>
                             <div id="employeeSkills${resp.id}">
@@ -46,7 +51,7 @@ document.addEventListener("DOMContentLoaded", async function () {
                         </div>
                     </div>
                     <div class="card-footer d-flex justify-content-center" style="position: relative;">
-                        <a class="btn stretched-link" style="text-align: center;" href="/api/employee/${resp.id}/">Show
+                        <a class="btn stretched-link" style="text-align: center;" href="/employee/${resp.id}/">Show
                             profile</a>
                     </div>
                 </div>`
@@ -54,18 +59,20 @@ document.addEventListener("DOMContentLoaded", async function () {
                 employeeSkills = document.getElementById(
                     `employeeSkills${resp.id}`
                 );
-                for (skill of resp.skills) {
-                    employeeSkills.insertAdjacentHTML(
-                        "beforeend",
-                        `<span class="badge rounded-pill text-bg-dark">${skill.name}</span>`
-                    );
+                if (resp.hasOwnProperty("skills")) {
+                    for (skill of resp.skills) {
+                        employeeSkills.insertAdjacentHTML(
+                            "beforeend",
+                            `<span class="badge rounded-pill text-bg-dark">${skill.name}</span>`
+                        );
+                    }
                 }
             }
         });
 });
 
 async function declineApplication(button) {
-    await fetch(`/api/post/vacancy/${vacancyId}/decline-app/`, {
+    await fetch(`/post/vacancy/${vacancyId}/decline-app/`, {
         method: "POST",
         body: JSON.stringify({ respondentId: button.id }),
         headers: {

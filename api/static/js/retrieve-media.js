@@ -1,9 +1,7 @@
-const modelName = window.location.href.match(/(?<=api\/)\w+(?=\/)/)[0],
-    // modelId = document.getElementById("modelId").innerText,
-    imgEl = document.getElementById("profilePic");
+const modelName = window.location.href.match(/(?<=\/)\w+(?=\/)/)[0];
 
 async function getMediaUrl(mediaId) {
-    let imageUrl = await fetch(`/api/media/${mediaId}/`, {
+    let imageUrl = await fetch(`/media/${mediaId}/`, {
         method: "GET",
         headers: {
             "X-CSRFToken": csrfToken,
@@ -24,7 +22,7 @@ async function getMediaUrl(mediaId) {
 }
 
 async function getMediaArray(modelName, modelId) {
-    var mediaArray = await fetch("/api/get/media-array/from-instance/", {
+    var mediaArray = await fetch("/get/media-array/from-instance/", {
         method: "POST",
         body: JSON.stringify({
             modelName: modelName,

@@ -6,12 +6,8 @@ Register a New User
 
 {% block content %}
 
-<!--<form action="">-->
-<!--    <input type="file" id="mediaInput">-->
-<!--    <button type="submit">POST IMAGE</button>-->
-<!--</form>-->
-<img src="" id="retrieved">
-<button onclick="func()">POOOOOOOOST REQUEST</button>
+<button style="height: 150px; width: 150px;" onclick="func()">POOOOOOOOST REQUEST</button>
+<input type="file" id="cvFile">
 
 {% csrf_token %}
 
@@ -21,25 +17,18 @@ Register a New User
         const csrfToken = document.querySelector(
             "[name=csrfmiddlewaretoken]"
         ).value;
-        const imgEl = document.getElementById('retrieved')
-        let imageUrl = await fetch("/api/media/42/", {
-            method: "GET",
+        const file = document.getElementById("cvFile").files[0]
+        await fetch("/api/cv/1/", {
+            method: "DELETE",
             headers: {
                 "X-CSRFToken": csrfToken,
+
             },
         }).then((response) => {
-            const contentType = response.headers.get("content-type");
-            if (contentType && contentType.startsWith("image/")) {
-                var blob = response.blob()
-                return blob;
-            }
-        }).then((blob) => {
-            var imageUrl = window.URL.createObjectURL(blob);
-            console.log(imageUrl);
-            return imageUrl
-
+            return response.json()
+        }).then((data) => {
+            console.log(data)
         });
-        imgEl.src = imageUrl
     }
 </script>
 

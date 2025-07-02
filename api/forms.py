@@ -32,7 +32,7 @@ class RegistrationForm(BaseUserCreationForm):
     # last_name = forms.CharField(max_length=30)
 
 
-class CompanyRegistrationForm(forms.Form):
+class CompanyRegistrationForm(forms.ModelForm):
     class Meta:
         model = Company
         fields = ['name', 'email', 'phone', 'country', 'state', 'city', 'text', 'media']
@@ -80,7 +80,7 @@ class CompanyRegistrationForm(forms.Form):
                                       'placeholder': 'Select a city'})
     )
 
-    text = forms.CharField(max_length=400, widget=forms.Textarea(attrs={'class': 'form-control',
+    text = forms.CharField(widget=forms.Textarea(attrs={'class': 'form-control',
                                                                         'placeholder':
                                                                         'Tell us more about your enterprise!'}),
                            required=False)
@@ -140,10 +140,7 @@ class EmployeeRegistrationForm(forms.ModelForm):
                                                         'style': "height: unset;"}),
                            required=False)
     skills = forms.CharField(required=False)
-    cv = forms.FileField(allow_empty_file=True,
-                         required=False,
-                         widget=forms.FileInput(attrs={'class': 'form-control-file',
-                                                       'style': "margin-bottom: .5rem;"}))
+    cv = forms.CharField(required=False)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

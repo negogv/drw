@@ -25,7 +25,7 @@ just saving here unused code
 //     data.append("modelName", modelName);
 //     data.append("modelId", modelId);
 
-//     await fetch("/api/post/media/", {
+//     await fetch("/post/media/", {
 //         method: "POST",
 //         // body: mediaInput.files[0],
 //         body: data,
@@ -56,7 +56,7 @@ just saving here unused code
 //         });
 // }
 
-fetch("http://127.0.0.1:8000/api/post/media/", {
+fetch("http://127.0.0.1:8000/post/media/", {
     body: JSON.stringify({
         modelName: "Employee",
         modelId: 15,

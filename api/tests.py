@@ -22,9 +22,34 @@
 #         except MediaFile.DoesNotExist:
 #             return JsonResponse({'error': 'Not Found',
 #                                  'message': "MediaFile object isn't found"}, status=404)
+#
+# from requests_toolbelt.multipart.encoder import MultipartEncoder
+# from django.core.management.base import BaseCommand
+# class MultipartRenderer(BaseRenderer):
+#     media_type = 'multipart/form-data'
+#     format = 'multipart'
+#
+#     def render(self, data, media_type=None, renderer_context=None):
+#         multipart_data = MultipartEncoder(fields=data)
+#         return multipart_data.to_string()
+#
+#
+# class GetMediaFileElement(APIView):
+#     renderer_classes = [MultipartRenderer]
+#
+#     def get(self, request, **kwargs):
+#         try:
+#             media = MediaFile.objects.get(id=kwargs['media_id'])
+#             return Response({'mediaName': media.name,
+#                              'mediaBlob': media.binary},
+#                             content_type='multipart/form-data',
+#                             status=status.HTTP_200_OK)
+#         except MediaFile.DoesNotExist:
+#             return JsonResponse({'error': 'Not Found',
+#                                  'message': "MediaFile object isn't found"}, status=404)
 
 import requests
 
-test_response = requests.request(method='get', url='http://127.0.0.1:8000/api/test', params={'colors': ['red', 'green', 'blue']})
+test_response = requests.request(method='get', url='http://127.0.0.1:8000/test', params={'colors': ['red', 'green', 'blue']})
 print(test_response)
 

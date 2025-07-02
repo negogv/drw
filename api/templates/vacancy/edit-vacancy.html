@@ -93,31 +93,5 @@
 <script src="{% static 'js/location.js' %}"></script>
 <script src="{% static 'js/retrieve-media.js' %}"></script>
 <script src="{% static 'js/upload-media.js' %}"></script>
-<script>
-    const vacancyId = window.location.href.match(/(?<=edit\/)\d+/)[0];  // change if url will be changed
-    const mediaDiv = document.getElementById('media');
-
-    async function loadMedia() {
-        const [medias, urls] = await getMediaUrlList('vacancy', vacancyId);
-
-        if (medias && urls) {
-            mediaDiv.innerHTML = "";
-            for (let url of urls) {
-                mediaDiv.insertAdjacentHTML('beforeend',
-                    `<img src="${url}" class="rounded-3 p-3 border border-2 m-1" alt="error"
-                    style="height: 200px; width: 300px; display: flex;">`
-                )
-            }
-        }
-    }
-    async function postMediaBtn() {
-        const isUploaded = await postAllImages('vacancy', vacancyId)
-        if (isUploaded) {
-            loadMedia()
-        } else {
-            displayAlert('danger', 'Error occured while uploading the media files')
-        }
-    }
-    loadMedia()
-</script>
+<script src="{% static 'js/edit-vacancy.js' %}"></script>
 {% endblock %}

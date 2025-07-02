@@ -30,11 +30,8 @@ document.addEventListener("DOMContentLoaded", async function () {
     tags = document.getElementById("tags");
     applyBtn = document.querySelector(".btn-success");
     const mediaDiv = document.getElementById("media");
-    // csrfToken = document.querySelector("[name=csrfmiddlewaretoken]").value;
 
-    console.log("start loading | before get/vacancy");
-
-    let vacancy = await fetch(`/api/get/vacancy/${vacancyId}/`, {
+    let vacancy = await fetch(`/get/vacancy/${vacancyId}/`, {
         method: "GET",
         headers: {
             "X-CSRFToken": csrfToken,
@@ -50,15 +47,13 @@ document.addEventListener("DOMContentLoaded", async function () {
             return response.json();
         })
         .then((data) => {
-            console.log(data);
-
             return data;
         })
         .catch((error) => {
             console.error("Fetch completely failed:", error);
         });
 
-    let company = await fetch(`/api/get/company/${vacancy.owner}/`, {
+    let company = await fetch(`/get/company/${vacancy.owner}/`, {
         method: "GET",
         headers: {
             "X-CSRFToken": csrfToken,
@@ -88,14 +83,14 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     title.innerText = vacancy.title;
     if (editBtn) {
-        editBtn.href = `/api/vacancy/edit/${vacancyId}/`;
-        manageBtn.href = `/api/vacancy/${vacancyId}/manage/`;
+        editBtn.href = `/vacancy/edit/${vacancyId}/`;
+        manageBtn.href = `/vacancy/${vacancyId}/manage/`;
         delBtn.addEventListener("click", deleteVacancy);
         companyId = company.id;
     }
     locationP.innerText = vacancy.city + ", " + vacancy.country;
     owner.innerText = company.name;
-    owner.href = `/api/company/${company.id}`;
+    owner.href = `/company/${company.id}`;
     ownerEmail.innerText = company.email;
     ownerPhone.innerText = company.phone;
     salary.innerText =
@@ -107,7 +102,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         tags.insertAdjacentHTML(
             "beforeend",
             `
-            <a class="btn btn-info" href="/api/vacancy/search/?tag=${slugName}"> ${tag.name} </a>
+            <a class="btn btn-info" href="/vacancy/search/?tag=${slugName}"> ${tag.name} </a>
             `
         );
     }
@@ -116,14 +111,17 @@ document.addEventListener("DOMContentLoaded", async function () {
         mediaDiv.insertAdjacentHTML(
             "beforeend",
             `<img src="${imageUrl}" class="rounded-3 p-3 border border-2 m-1" alt="error"
-            style="height: 200px; width: 300px; display: flex;">`
+            style="height: 200px; width: 300px;">`
         );
+    }
+    if (mediaDiv.innerHTML.length > 0) {
+        document.getElementById("mediaHeader").innerText = "Additional media:";
     }
 });
 
 async function applyForVac(button) {
     let applied = await fetch(
-        `/api/post/vacancy/apply/${vacancyId}/${button.id}/`,
+        `/post/vacancy/apply/${vacancyId}/${button.id}/`,
         {
             method: "POST",
             headers: {
@@ -149,7 +147,7 @@ async function applyForVac(button) {
 }
 
 async function deleteVacancy() {
-    await fetch(`/api/delete/vacancy/${vacancyId}/`, {
+    await fetch(`/delete/vacancy/${vacancyId}/`, {
         method: "DELETE",
         headers: {
             "X-CSRFToken": csrfToken,
@@ -159,7 +157,7 @@ async function deleteVacancy() {
             console.log(response.status);
 
             if (response.status == 204) {
-                window.location.assign(`/api/company/${companyId}/`);
+                window.location.assign(`/company/${companyId}/`);
             } else {
                 return response.json().then((errorData) => {
                     throw errorData;

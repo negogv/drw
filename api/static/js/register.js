@@ -8,7 +8,6 @@ document.addEventListener("DOMContentLoaded", function () {
     formDiv = document.getElementById("form_div");
     h2 = document.getElementsByTagName("h2")[0];
     insertedDataUl = document.getElementById("inserted_data_ul");
-    alertDiv = document.getElementById("alert-div");
     csrfToken = document.querySelector("[name=csrfmiddlewaretoken]").value;
 });
 
@@ -115,7 +114,7 @@ async function submitUsername() {
     }
     username = username.toLowerCase();
 
-    let isValidated = await fetch("/api/username/validate/", {
+    let isValidated = await fetch("/post/username/validate/", {
         method: "POST",
         body: JSON.stringify({
             username: username,
@@ -144,7 +143,7 @@ async function submitUsername() {
         .style.removeProperty("display");
     document.getElementById("is_reg_div").remove();
 
-    TheUser.username = username; // TODO: test with regex or slugify the value
+    TheUser.username = username;
     formDiv.innerHTML = `<h2 class="align-center">Your first name</h2>
         <label>(necessary field)</label>
         <form onsubmit="submitFirstName()" id="firstname_form">
@@ -251,6 +250,8 @@ function submitEmail() {
 function submitPhone() {
     // TODO: validate phone number by country code (if the code is real)
     event.preventDefault();
+    console.log("phone func jebat");
+
     let phone = document.getElementById("phone_field").value;
     let cleaningRegEx = /[^\+\d]/g;
     phone = phone.replace(cleaningRegEx, "");
@@ -309,7 +310,7 @@ function submitPassword() {
             )
             .join("&");
 
-        fetch("/api/register/", {
+        fetch("/register/", {
             method: "POST",
             body: body,
             headers: {
