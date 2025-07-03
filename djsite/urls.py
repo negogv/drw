@@ -17,9 +17,6 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 import debug_toolbar
-from rest_framework.schemas import get_schema_view
-
-from rest_framework import permissions
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
 
@@ -37,14 +34,8 @@ schema_view = get_schema_view(
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('testapp/', include('testapp.urls')),
     path('__debug__/', include(debug_toolbar.urls)),
     path('', include('api.urls')),
-    # path('api_schema', get_schema_view()),
 
     path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
-    # path('get/', include('api.urls')),
-    # path('post/', include('api.urls')),
-    # path('update/', include('api.urls')),
-    # path('delete/', include('api.urls')),
 ]
