@@ -10,11 +10,11 @@ During the project I were learning core Backend skills. At the end, I think, I d
 
 I want you to know that I am currently developing a new interesting personal project with real-life usage.
 
-The new project will be written on Express JS using TypeScript and MongDB database with Redis implementation. All of these are new technologies for me, but they will be definetelly handy in my work as a Web developer.
+The new project will be written on FastAPI using MongDB database with Redis implementation. All of these are new technologies for me, but they will be definetelly handy in my work as a Web developer.
 
 I can give you acces to the private repository, so you can look at my progress.
 Leave me a message:
 - Email: *cposhtaa@gmail.com*
 - LinkedIn: *[Daniel Tkalenko](https://linkedin.com/in/daniel-tkale)*
 - Instagram: *[Daniel](https://www.instagram.com/beleberda_2/)*
-- Telegram: *[Oleg Markovich](https://t.me/O637697703/)*
+- Telegram: *[Oleg Markovic](https://t.me/O637697703/)*
